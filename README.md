@@ -1,11 +1,23 @@
-# LazyBala - 费劲巴拉下载器
+# LazyBala 🦫
 
-![LazyBala Logo](https://img.shields.io/badge/LazyBala-费劲巴拉下载器-orange?style=for-the-badge)
-![Go Version](https://img.shields.io/badge/Go-1.21+-blue?style=flat-square)
-![Vue Version](https://img.shields.io/badge/Vue-3.0+-green?style=flat-square)
-![License](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)
+<div align="center">
 
-> 一个简洁、高效的哔哩哔哩音频下载器，支持扫码登录、实时进度显示、断点续传等功能。
+![LazyBala Logo](https://via.placeholder.com/200x200/FF6B35/FFFFFF?text=🦫)
+
+**基于 Go 和纯 JavaScript 的媒体下载应用**
+
+支持 Bilibili 等平台的音频下载，具有现代化的 Web 界面和完整的自动化部署流程
+
+[![GitHub release](https://img.shields.io/github/release/kis2show/lazybala.svg)](https://github.com/kis2show/lazybala/releases)
+[![Docker Pulls](https://img.shields.io/docker/pulls/kis2show/lazybala.svg)](https://hub.docker.com/r/kis2show/lazybala)
+[![GitHub stars](https://img.shields.io/github/stars/kis2show/lazybala.svg)](https://github.com/kis2show/lazybala/stargazers)
+[![GitHub license](https://img.shields.io/github/license/kis2show/lazybala.svg)](https://github.com/kis2show/lazybala/blob/main/LICENSE)
+
+[🚀 快速开始](#-快速开始) • [📦 安装方式](#-安装方式) • [🐳 Docker 部署](#-docker-部署) • [📖 文档](#-文档) • [🤝 贡献](#-贡献)
+
+</div>
+
+---
 
 ## ✨ 特性
 
@@ -73,7 +85,7 @@ docker run -d \
    ```
 
 5. **访问应用**
-   
+
    打开浏览器访问 `http://localhost:8080`
 
 ## 📖 使用说明
@@ -233,5 +245,5 @@ docker build -t lazybala .
 
 ---
 
-**作者**: Kis2Show  
+**作者**: Kis2Show
 **项目**: LazyBala - 费劲巴拉下载器
