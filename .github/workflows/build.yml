@@ -35,7 +35,9 @@ jobs:
       id: meta
       uses: docker/metadata-action@v5
       with:
-        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        images: |
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          ${{ secrets.DOCKERHUB_USERNAME && 'kis2show/lazybala' || '' }}
         tags: |
           type=ref,event=branch
           type=ref,event=pr
@@ -100,6 +102,13 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
+    - name: Log in to Docker Hub
+      if: ${{ secrets.DOCKERHUB_USERNAME && secrets.DOCKERHUB_TOKEN }}
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
     - name: Build and push Docker image
       id: build
       uses: docker/build-push-action@v5
@@ -151,18 +160,34 @@ jobs:
           - 🔄 自动版本更新
 
           ### 🐳 Docker 镜像
+
+          **GitHub Container Registry:**
           ```bash
           docker pull ghcr.io/${{ github.repository }}:${{ github.ref_name }}
           ```
 
+          **Docker Hub:**
+          ```bash
+          docker pull kis2show/lazybala:${{ github.ref_name }}
+          ```
+
           ### 🚀 使用方法
           ```bash
+          # 使用 GitHub Container Registry
           docker run -d \
             --name lazybala \
             -p 8080:8080 \
             -v $(pwd)/audiobooks:/app/audiobooks \
             -v $(pwd)/config:/app/config \
             ghcr.io/${{ github.repository }}:${{ github.ref_name }}
+
+          # 或使用 Docker Hub
+          docker run -d \
+            --name lazybala \
+            -p 8080:8080 \
+            -v $(pwd)/audiobooks:/app/audiobooks \
+            -v $(pwd)/config:/app/config \
+            kis2show/lazybala:${{ github.ref_name }}
           ```
 
           ### 📖 更多信息

@@ -308,7 +308,7 @@ jobs:
         echo "Image name: ${{ env.IMAGE_NAME }}"
 
     - name: Log in to Docker Hub
-      if: ${{ vars.ENABLE_DOCKERHUB == 'true' }}
+      if: ${{ secrets.DOCKERHUB_USERNAME && secrets.DOCKERHUB_TOKEN }}
       uses: docker/login-action@v3
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -320,7 +320,7 @@ jobs:
       with:
         images: |
           ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          ${{ vars.ENABLE_DOCKERHUB == 'true' && 'kis2show/lazybala' || '' }}
+          ${{ secrets.DOCKERHUB_USERNAME && 'kis2show/lazybala' || '' }}
         tags: |
           type=semver,pattern={{version}}
           type=semver,pattern={{major}}.{{minor}}
@@ -363,10 +363,11 @@ jobs:
         push-to-registry: true
 
     - name: Update Docker Hub description
-      if: ${{ vars.ENABLE_DOCKERHUB == 'true' }}
+      if: ${{ secrets.DOCKERHUB_USERNAME && secrets.DOCKERHUB_TOKEN }}
+      continue-on-error: true  # 允许描述更新失败
       uses: peter-evans/dockerhub-description@v3
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
         repository: kis2show/lazybala
-        readme-filepath: ./DOCKER.md
+        readme-filepath: ./README.md
