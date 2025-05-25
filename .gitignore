@@ -60,9 +60,9 @@ start.bat
 start.sh
 
 # ===== 开发和部署文件 =====
-# Docker 相关
-docker-compose.yml
-Dockerfile
+# Docker 相关（注释掉，这些文件需要被包含）
+# docker-compose.yml
+# Dockerfile
 
 # 部署文档
 DEPLOYMENT.md

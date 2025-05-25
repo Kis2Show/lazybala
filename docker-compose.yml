@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  lazybala:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: lazybala:latest
+    container_name: lazybala
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      # 数据持久化目录
+      - ./data/audiobooks:/app/audiobooks
+      - ./data/config:/app/config
+      - ./data/cookies:/app/cookies
+      # 可选：如果有预下载的二进制工具
+      # - ./bin:/app/bin:ro
+    environment:
+      - PORT=8080
+      - GIN_MODE=release
+      - TZ=Asia/Shanghai
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - lazybala-network
+    labels:
+      - "com.docker.compose.project=lazybala"
+      - "com.docker.compose.service=lazybala"
+      - "traefik.enable=true"
+      - "traefik.http.routers.lazybala.rule=Host(`lazybala.local`)"
+      - "traefik.http.services.lazybala.loadbalancer.server.port=8080"
+
+networks:
+  lazybala-network:
+    driver: bridge
+
+volumes:
+  audiobooks:
+    driver: local
+  config:
+    driver: local
+  cookies:
+    driver: local
