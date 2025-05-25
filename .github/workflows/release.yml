@@ -176,6 +176,7 @@ jobs:
     permissions:
       contents: write
     strategy:
+      fail-fast: false
       matrix:
         include:
           - goos: linux
@@ -272,49 +273,15 @@ jobs:
         zip lazybala-${{ matrix.suffix }}.zip lazybala-${{ matrix.suffix }}
         sha256sum lazybala-${{ matrix.suffix }}.zip > lazybala-${{ matrix.suffix }}.zip.sha256
 
-    - name: Upload binary to release (Unix)
-      if: matrix.goos != 'windows'
-      uses: actions/upload-release-asset@v1
+    - name: Upload release assets
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ needs.create-release.outputs.tag_name }}
+        files: |
+          lazybala-${{ matrix.suffix }}${{ matrix.goos == 'windows' && '.zip' || '.tar.gz' }}
+          lazybala-${{ matrix.suffix }}${{ matrix.goos == 'windows' && '.zip' || '.tar.gz' }}.sha256
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ needs.create-release.outputs.upload_url }}
-        asset_path: ./lazybala-${{ matrix.suffix }}.tar.gz
-        asset_name: lazybala-${{ matrix.suffix }}.tar.gz
-        asset_content_type: application/gzip
-
-    - name: Upload binary to release (Windows)
-      if: matrix.goos == 'windows'
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ needs.create-release.outputs.upload_url }}
-        asset_path: ./lazybala-${{ matrix.suffix }}.zip
-        asset_name: lazybala-${{ matrix.suffix }}.zip
-        asset_content_type: application/zip
-
-    - name: Upload checksum (Unix)
-      if: matrix.goos != 'windows'
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ needs.create-release.outputs.upload_url }}
-        asset_path: ./lazybala-${{ matrix.suffix }}.tar.gz.sha256
-        asset_name: lazybala-${{ matrix.suffix }}.tar.gz.sha256
-        asset_content_type: text/plain
-
-    - name: Upload checksum (Windows)
-      if: matrix.goos == 'windows'
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ needs.create-release.outputs.upload_url }}
-        asset_path: ./lazybala-${{ matrix.suffix }}.zip.sha256
-        asset_name: lazybala-${{ matrix.suffix }}.zip.sha256
-        asset_content_type: text/plain
 
   build-docker:
     name: Build and Push Docker Images

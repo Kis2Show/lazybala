@@ -12,6 +12,7 @@ jobs:
     name: Build and Test
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         include:
           - goos: linux
@@ -90,7 +91,7 @@ jobs:
         fi
 
     - name: Upload build artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: lazybala-${{ matrix.goos }}-${{ matrix.goarch }}
         path: lazybala-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.goos == 'windows' && '.exe' || '' }}
@@ -104,7 +105,10 @@ jobs:
 
     steps:
     - name: Download all artifacts
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
+      with:
+        pattern: lazybala-*
+        merge-multiple: true
 
     - name: List built binaries
       run: |
