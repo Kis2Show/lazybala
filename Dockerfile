@@ -1,6 +1,6 @@
 # LazyBala 多阶段构建 Dockerfile
 # Go 构建阶段
-FROM golang:1.22-alpine AS backend-builder
+FROM golang:1.23-alpine AS backend-builder
 
 # 安装构建依赖
 RUN apk add --no-cache git ca-certificates tzdata
@@ -9,7 +9,16 @@ WORKDIR /app
 
 # 复制 Go 模块文件
 COPY go.mod go.sum ./
-RUN go mod download
+
+# 设置 Go 代理和环境变量
+ENV GOPROXY=https://proxy.golang.org,direct
+ENV GOSUMDB=sum.golang.org
+ENV GO111MODULE=on
+
+# 验证 Go 版本和模块文件
+RUN go version
+RUN cat go.mod
+RUN go mod download -x
 
 # 复制源代码
 COPY *.go ./

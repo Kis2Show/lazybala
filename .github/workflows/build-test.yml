@@ -37,7 +37,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
-        go-version: '1.22'
+        go-version: '1.23'
 
     - name: Cache Go modules
       uses: actions/cache@v3
@@ -73,17 +73,17 @@ jobs:
       run: |
         BUILD_TIME=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
         VERSION="dev-$(git rev-parse --short HEAD)"
-        
+
         echo "Building for ${{ matrix.name }} (${{ matrix.goos }}/${{ matrix.goarch }})"
-        
+
         go build \
           -ldflags="-w -s -extldflags '-static' -X main.version=${VERSION} -X main.buildTime=${BUILD_TIME}" \
           -trimpath \
           -o lazybala-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.goos == 'windows' && '.exe' || '' }} .
-        
+
         # 验证构建结果
         ls -la lazybala-${{ matrix.goos }}-${{ matrix.goarch }}*
-        
+
         # 对于非 Windows 平台，检查是否为静态链接
         if [[ "${{ matrix.goos }}" != "windows" ]]; then
           file lazybala-${{ matrix.goos }}-${{ matrix.goarch }}
@@ -112,7 +112,7 @@ jobs:
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "| 平台 | 状态 | 文件大小 |" >> $GITHUB_STEP_SUMMARY
         echo "|------|------|----------|" >> $GITHUB_STEP_SUMMARY
-        
+
         for dir in lazybala-*; do
           if [ -d "$dir" ]; then
             cd "$dir"
@@ -126,7 +126,7 @@ jobs:
             cd ..
           fi
         done
-        
+
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "构建时间: $(date)" >> $GITHUB_STEP_SUMMARY
 

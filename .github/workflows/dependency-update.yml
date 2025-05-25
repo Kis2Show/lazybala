@@ -21,7 +21,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
-        go-version: '1.22'
+        go-version: '1.23'
 
     - name: Update Go dependencies
       run: |
@@ -46,22 +46,22 @@ jobs:
         title: '🔄 Update Go Dependencies'
         body: |
           ## 🔄 自动更新 Go 依赖
-          
+
           这个 PR 自动更新了项目的 Go 依赖包到最新版本。
-          
+
           ### 📋 变更内容
           - 更新了 `go.mod` 和 `go.sum` 文件
           - 所有依赖包已更新到最新兼容版本
-          
+
           ### ✅ 检查清单
           - [ ] 检查构建是否成功
           - [ ] 检查测试是否通过
           - [ ] 检查功能是否正常
-          
+
           ### 🤖 自动化信息
           - 触发时间: ${{ github.event_name == 'schedule' && '定时任务' || '手动触发' }}
           - 工作流: `dependency-update.yml`
-          
+
           如果所有检查都通过，可以安全合并此 PR。
         branch: dependency-update/go-modules
         delete-branch: true
@@ -83,11 +83,11 @@ jobs:
         # 获取当前 Dockerfile 中的 Go 版本
         CURRENT_VERSION=$(grep "FROM golang:" Dockerfile | head -1 | sed 's/.*golang:\([0-9.]*\).*/\1/')
         echo "current=$CURRENT_VERSION" >> $GITHUB_OUTPUT
-        
+
         # 获取最新的 Go 版本（简化版本，实际可能需要调用 API）
-        LATEST_VERSION="1.22"  # 这里可以改为动态获取
+        LATEST_VERSION="1.23"  # 这里可以改为动态获取
         echo "latest=$LATEST_VERSION" >> $GITHUB_OUTPUT
-        
+
         if [ "$CURRENT_VERSION" != "$LATEST_VERSION" ]; then
           echo "update_needed=true" >> $GITHUB_OUTPUT
         else
@@ -108,22 +108,22 @@ jobs:
         title: '🐳 Update Docker Base Image'
         body: |
           ## 🐳 更新 Docker 基础镜像
-          
+
           这个 PR 将 Dockerfile 中的 Go 基础镜像从 `${{ steps.go-version.outputs.current }}` 更新到 `${{ steps.go-version.outputs.latest }}`。
-          
+
           ### 📋 变更内容
           - 更新 Dockerfile 中的 Go 版本
           - 从 `golang:${{ steps.go-version.outputs.current }}-alpine` 到 `golang:${{ steps.go-version.outputs.latest }}-alpine`
-          
+
           ### ✅ 检查清单
           - [ ] 检查 Docker 构建是否成功
           - [ ] 检查多平台构建是否正常
           - [ ] 检查容器运行是否正常
-          
+
           ### 🤖 自动化信息
           - 触发时间: ${{ github.event_name == 'schedule' && '定时任务' || '手动触发' }}
           - 工作流: `dependency-update.yml`
-          
+
           如果所有检查都通过，可以安全合并此 PR。
         branch: dependency-update/docker-base-image
         delete-branch: true
@@ -142,7 +142,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
-        go-version: '1.22'
+        go-version: '1.23'
 
     - name: Run Go security audit
       run: |
