@@ -1,0 +1,140 @@
+name: Build Test
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - goos: linux
+            goarch: amd64
+            name: Linux x64
+          - goos: linux
+            goarch: arm64
+            name: Linux ARM64
+          - goos: windows
+            goarch: amd64
+            name: Windows x64
+          - goos: darwin
+            goarch: amd64
+            name: macOS x64
+          - goos: darwin
+            goarch: arm64
+            name: macOS ARM64
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.22'
+
+    - name: Cache Go modules
+      uses: actions/cache@v3
+      with:
+        path: ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-
+
+    - name: Download dependencies
+      run: go mod download
+
+    - name: Run tests
+      if: matrix.goos == 'linux' && matrix.goarch == 'amd64'
+      run: |
+        go test -v ./...
+        go vet ./...
+
+    - name: Check code formatting
+      if: matrix.goos == 'linux' && matrix.goarch == 'amd64'
+      run: |
+        if [ "$(gofmt -s -l . | wc -l)" -gt 0 ]; then
+          echo "Code is not formatted properly:"
+          gofmt -s -l .
+          exit 1
+        fi
+
+    - name: Build binary
+      env:
+        GOOS: ${{ matrix.goos }}
+        GOARCH: ${{ matrix.goarch }}
+        CGO_ENABLED: 0
+      run: |
+        BUILD_TIME=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+        VERSION="dev-$(git rev-parse --short HEAD)"
+        
+        echo "Building for ${{ matrix.name }} (${{ matrix.goos }}/${{ matrix.goarch }})"
+        
+        go build \
+          -ldflags="-w -s -extldflags '-static' -X main.version=${VERSION} -X main.buildTime=${BUILD_TIME}" \
+          -trimpath \
+          -o lazybala-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.goos == 'windows' && '.exe' || '' }} .
+        
+        # 验证构建结果
+        ls -la lazybala-${{ matrix.goos }}-${{ matrix.goarch }}*
+        
+        # 对于非 Windows 平台，检查是否为静态链接
+        if [[ "${{ matrix.goos }}" != "windows" ]]; then
+          file lazybala-${{ matrix.goos }}-${{ matrix.goarch }}
+        fi
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: lazybala-${{ matrix.goos }}-${{ matrix.goarch }}
+        path: lazybala-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.goos == 'windows' && '.exe' || '' }}
+        retention-days: 7
+
+  build-summary:
+    name: Build Summary
+    needs: build
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+    - name: Download all artifacts
+      uses: actions/download-artifact@v3
+
+    - name: List built binaries
+      run: |
+        echo "## 🎯 构建结果" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "| 平台 | 状态 | 文件大小 |" >> $GITHUB_STEP_SUMMARY
+        echo "|------|------|----------|" >> $GITHUB_STEP_SUMMARY
+        
+        for dir in lazybala-*; do
+          if [ -d "$dir" ]; then
+            cd "$dir"
+            for file in lazybala-*; do
+              if [ -f "$file" ]; then
+                size=$(ls -lh "$file" | awk '{print $5}')
+                platform=$(echo "$file" | sed 's/lazybala-//' | sed 's/\.exe$//')
+                echo "| $platform | ✅ 成功 | $size |" >> $GITHUB_STEP_SUMMARY
+              fi
+            done
+            cd ..
+          fi
+        done
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "构建时间: $(date)" >> $GITHUB_STEP_SUMMARY
+
+    - name: Check build status
+      run: |
+        if [ "${{ needs.build.result }}" != "success" ]; then
+          echo "❌ 部分构建失败"
+          exit 1
+        else
+          echo "✅ 所有平台构建成功"
+        fi

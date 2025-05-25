@@ -1,0 +1,14 @@
+{
+  "action": "published",
+  "release": {
+    "tag_name": "v1.0.0",
+    "name": "LazyBala v1.0.0",
+    "body": "Initial release of LazyBala",
+    "draft": false,
+    "prerelease": false
+  },
+  "repository": {
+    "name": "lazybala",
+    "full_name": "kis2show/lazybala"
+  }
+}

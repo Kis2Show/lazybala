@@ -1,0 +1,101 @@
+name: Update yt-dlp
+
+on:
+  schedule:
+    # 每周日 UTC 时间 02:00 运行
+    - cron: '0 2 * * 0'
+  workflow_dispatch:
+
+jobs:
+  check-and-update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Get current yt-dlp version
+      id: current
+      run: |
+        if [ -f "bin/yt-dlp_linux" ]; then
+          # 从文件修改时间或其他方式获取当前版本
+          CURRENT_VERSION=$(stat -c %Y bin/yt-dlp_linux)
+        else
+          CURRENT_VERSION="0"
+        fi
+        echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+
+    - name: Get latest yt-dlp version
+      id: latest
+      run: |
+        LATEST_VERSION=$(curl -s https://api.github.com/repos/yt-dlp/yt-dlp/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+        echo "version=$LATEST_VERSION" >> $GITHUB_OUTPUT
+        echo "Latest version: $LATEST_VERSION"
+
+    - name: Check if update needed
+      id: check
+      run: |
+        # 简单的版本比较，实际项目中可能需要更复杂的逻辑
+        if [ "${{ steps.current.outputs.version }}" != "${{ steps.latest.outputs.version }}" ]; then
+          echo "update_needed=true" >> $GITHUB_OUTPUT
+          echo "Update needed from ${{ steps.current.outputs.version }} to ${{ steps.latest.outputs.version }}"
+        else
+          echo "update_needed=false" >> $GITHUB_OUTPUT
+          echo "No update needed"
+        fi
+
+    - name: Download new yt-dlp binaries
+      if: steps.check.outputs.update_needed == 'true'
+      run: |
+        mkdir -p bin
+        
+        LATEST_VERSION="${{ steps.latest.outputs.version }}"
+        
+        # 下载 amd64 版本
+        curl -L "https://github.com/yt-dlp/yt-dlp/releases/download/$LATEST_VERSION/yt-dlp_linux" -o bin/yt-dlp_linux
+        
+        # 下载 arm64 版本
+        curl -L "https://github.com/yt-dlp/yt-dlp/releases/download/$LATEST_VERSION/yt-dlp_linux_aarch64" -o bin/yt-dlp_linux_aarch64
+        
+        # 设置执行权限
+        chmod +x bin/yt-dlp_*
+        
+        echo "Downloaded yt-dlp $LATEST_VERSION"
+
+    - name: Create Pull Request
+      if: steps.check.outputs.update_needed == 'true'
+      uses: peter-evans/create-pull-request@v5
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        commit-message: "chore: update yt-dlp to ${{ steps.latest.outputs.version }}"
+        title: "Update yt-dlp to ${{ steps.latest.outputs.version }}"
+        body: |
+          ## 自动更新 yt-dlp
+          
+          这是一个自动生成的 PR，用于更新 yt-dlp 到最新版本。
+          
+          ### 变更内容
+          - 更新 yt-dlp 从当前版本到 `${{ steps.latest.outputs.version }}`
+          - 包含 amd64 和 arm64 架构的二进制文件
+          
+          ### 验证
+          - [ ] 二进制文件已下载并设置执行权限
+          - [ ] 版本号正确
+          
+          ### 发布说明
+          查看 [yt-dlp 发布页面](https://github.com/yt-dlp/yt-dlp/releases/tag/${{ steps.latest.outputs.version }}) 了解详细变更。
+          
+          ---
+          
+          此 PR 由 GitHub Actions 自动创建。如果测试通过，可以安全合并。
+        branch: update-ytdlp-${{ steps.latest.outputs.version }}
+        delete-branch: true
+
+    - name: Auto-merge if tests pass
+      if: steps.check.outputs.update_needed == 'true'
+      run: |
+        echo "PR created for yt-dlp update to ${{ steps.latest.outputs.version }}"
+        echo "Manual review and merge required"

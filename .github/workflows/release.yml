@@ -1,0 +1,395 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag'
+        required: true
+        type: string
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+      tag_name: ${{ steps.get_tag.outputs.tag }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Get tag name
+      id: get_tag
+      run: |
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          echo "tag=${{ github.event.inputs.tag }}" >> $GITHUB_OUTPUT
+        else
+          echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Generate changelog
+      id: changelog
+      run: |
+        # 生成变更日志
+        if git tag --list | grep -q "${{ steps.get_tag.outputs.tag }}"; then
+          PREVIOUS_TAG=$(git tag --sort=-version:refname | grep -A1 "${{ steps.get_tag.outputs.tag }}" | tail -1)
+          if [ -n "$PREVIOUS_TAG" ] && [ "$PREVIOUS_TAG" != "${{ steps.get_tag.outputs.tag }}" ]; then
+            CHANGELOG=$(git log --pretty=format:"- %s (%h)" $PREVIOUS_TAG..${{ steps.get_tag.outputs.tag }})
+          else
+            CHANGELOG=$(git log --pretty=format:"- %s (%h)" ${{ steps.get_tag.outputs.tag }})
+          fi
+        else
+          CHANGELOG="Initial release"
+        fi
+
+        echo "changelog<<EOF" >> $GITHUB_OUTPUT
+        echo "$CHANGELOG" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.get_tag.outputs.tag }}
+        release_name: LazyBala ${{ steps.get_tag.outputs.tag }}
+        body: |
+          ## 🎉 LazyBala ${{ steps.get_tag.outputs.tag }}
+
+          LazyBala 是一个基于 Go 和纯 JavaScript 的媒体下载应用，支持 Bilibili 等平台的音频下载。
+
+          ### 📋 变更内容
+          ${{ steps.changelog.outputs.changelog }}
+
+          ### 📦 下载二进制文件
+
+          选择适合您系统的版本：
+
+          | 操作系统 | 架构 | 下载链接 |
+          |----------|------|----------|
+          | 🐧 Linux | x64 | [lazybala-linux-amd64.tar.gz](https://github.com/${{ github.repository }}/releases/download/${{ steps.get_tag.outputs.tag }}/lazybala-linux-amd64.tar.gz) |
+          | 🐧 Linux | ARM64 | [lazybala-linux-arm64.tar.gz](https://github.com/${{ github.repository }}/releases/download/${{ steps.get_tag.outputs.tag }}/lazybala-linux-arm64.tar.gz) |
+          | 🐧 Linux | ARMv7 | [lazybala-linux-armv7.tar.gz](https://github.com/${{ github.repository }}/releases/download/${{ steps.get_tag.outputs.tag }}/lazybala-linux-armv7.tar.gz) |
+          | 🪟 Windows | x64 | [lazybala-windows-amd64.exe.zip](https://github.com/${{ github.repository }}/releases/download/${{ steps.get_tag.outputs.tag }}/lazybala-windows-amd64.exe.zip) |
+          | 🪟 Windows | ARM64 | [lazybala-windows-arm64.exe.zip](https://github.com/${{ github.repository }}/releases/download/${{ steps.get_tag.outputs.tag }}/lazybala-windows-arm64.exe.zip) |
+          | 🍎 macOS | x64 | [lazybala-darwin-amd64.tar.gz](https://github.com/${{ github.repository }}/releases/download/${{ steps.get_tag.outputs.tag }}/lazybala-darwin-amd64.tar.gz) |
+          | 🍎 macOS | Apple Silicon | [lazybala-darwin-arm64.tar.gz](https://github.com/${{ github.repository }}/releases/download/${{ steps.get_tag.outputs.tag }}/lazybala-darwin-arm64.tar.gz) |
+          | 🔧 FreeBSD | x64 | [lazybala-freebsd-amd64.tar.gz](https://github.com/${{ github.repository }}/releases/download/${{ steps.get_tag.outputs.tag }}/lazybala-freebsd-amd64.tar.gz) |
+
+          ### 🔐 校验和
+
+          每个下载文件都提供了 SHA256 校验和，用于验证文件完整性：
+          - 下载对应的 `.sha256` 文件
+          - 使用 `sha256sum -c filename.sha256` 验证
+
+          ### 🚀 快速开始
+
+          #### 二进制文件使用
+          ```bash
+          # Linux/macOS
+          tar -xzf lazybala-linux-amd64.tar.gz
+          chmod +x lazybala-linux-amd64
+          ./lazybala-linux-amd64
+
+          # Windows (PowerShell)
+          Expand-Archive lazybala-windows-amd64.exe.zip
+          .\lazybala-windows-amd64.exe
+          ```
+
+          #### Docker 使用
+          ```bash
+          # 拉取镜像
+          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.get_tag.outputs.tag }}
+
+          # 运行容器
+          docker run -d \
+            --name lazybala \
+            -p 8080:8080 \
+            -v ./data/audiobooks:/app/audiobooks \
+            -v ./data/config:/app/config \
+            -v ./data/cookies:/app/cookies \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.get_tag.outputs.tag }}
+          ```
+
+          #### Docker Compose 使用
+          ```bash
+          # 下载配置文件
+          curl -O https://raw.githubusercontent.com/${{ github.repository }}/${{ steps.get_tag.outputs.tag }}/docker-compose.yml
+
+          # 启动服务
+          docker-compose up -d
+          ```
+
+          ### 🌐 访问应用
+
+          启动后访问：http://localhost:8080
+
+          ### ✨ 主要特性
+
+          - 🎵 支持 Bilibili 音频下载
+          - 🔐 QR 码登录认证
+          - 📱 响应式 Web 界面
+          - 🐳 Docker 容器化部署
+          - 🌍 多平台支持
+          - 📊 实时下载进度
+          - 📝 下载历史管理
+
+          ### 📖 文档
+
+          - [📚 使用说明](https://github.com/${{ github.repository }}/blob/${{ steps.get_tag.outputs.tag }}/README.md)
+          - [🐳 Docker 部署指南](https://github.com/${{ github.repository }}/blob/${{ steps.get_tag.outputs.tag }}/DOCKER.md)
+          - [⚙️ GitHub Actions 配置](https://github.com/${{ github.repository }}/blob/${{ steps.get_tag.outputs.tag }}/GITHUB_ACTIONS.md)
+
+          ### 🐛 问题反馈
+
+          如果您遇到问题，请：
+          1. 查看 [Issues](https://github.com/${{ github.repository }}/issues) 中是否有相关问题
+          2. 提交新的 [Issue](https://github.com/${{ github.repository }}/issues/new) 并附上详细信息
+
+          ### 💝 支持项目
+
+          如果这个项目对您有帮助，请考虑：
+          - ⭐ 给项目点个星
+          - 🍴 Fork 并贡献代码
+          - 📢 分享给更多人
+        draft: false
+        prerelease: ${{ contains(steps.get_tag.outputs.tag, '-') }}
+
+  build-binaries:
+    name: Build Binaries
+    needs: create-release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    strategy:
+      matrix:
+        include:
+          - goos: linux
+            goarch: amd64
+            suffix: linux-amd64
+            name: Linux x64
+          - goos: linux
+            goarch: arm64
+            suffix: linux-arm64
+            name: Linux ARM64
+          - goos: linux
+            goarch: arm
+            goarm: 7
+            suffix: linux-armv7
+            name: Linux ARMv7
+          - goos: windows
+            goarch: amd64
+            suffix: windows-amd64.exe
+            name: Windows x64
+          - goos: windows
+            goarch: arm64
+            suffix: windows-arm64.exe
+            name: Windows ARM64
+          - goos: darwin
+            goarch: amd64
+            suffix: darwin-amd64
+            name: macOS x64
+          - goos: darwin
+            goarch: arm64
+            suffix: darwin-arm64
+            name: macOS ARM64 (Apple Silicon)
+          - goos: freebsd
+            goarch: amd64
+            suffix: freebsd-amd64
+            name: FreeBSD x64
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.22'
+
+    - name: Cache Go modules
+      uses: actions/cache@v3
+      with:
+        path: ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-
+
+    - name: Download dependencies
+      run: go mod download
+
+    - name: Build binary
+      env:
+        GOOS: ${{ matrix.goos }}
+        GOARCH: ${{ matrix.goarch }}
+        GOARM: ${{ matrix.goarm }}
+        CGO_ENABLED: 0
+      run: |
+        BUILD_TIME=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+        VERSION=${{ needs.create-release.outputs.tag_name }}
+
+        echo "Building for ${{ matrix.name }} (${{ matrix.goos }}/${{ matrix.goarch }})"
+
+        go build \
+          -ldflags="-w -s -extldflags '-static' -X main.version=${VERSION} -X main.buildTime=${BUILD_TIME}" \
+          -trimpath \
+          -o lazybala-${{ matrix.suffix }} .
+
+        # 验证构建结果
+        ls -la lazybala-${{ matrix.suffix }}
+
+        # 对于非 Windows 平台，检查是否为静态链接
+        if [[ "${{ matrix.goos }}" != "windows" ]]; then
+          file lazybala-${{ matrix.suffix }}
+          if command -v ldd >/dev/null 2>&1; then
+            ldd lazybala-${{ matrix.suffix }} || echo "Static binary confirmed"
+          fi
+        fi
+
+    - name: Compress binary (Unix)
+      if: matrix.goos != 'windows'
+      run: |
+        tar -czf lazybala-${{ matrix.suffix }}.tar.gz lazybala-${{ matrix.suffix }}
+        sha256sum lazybala-${{ matrix.suffix }}.tar.gz > lazybala-${{ matrix.suffix }}.tar.gz.sha256
+
+    - name: Compress binary (Windows)
+      if: matrix.goos == 'windows'
+      run: |
+        zip lazybala-${{ matrix.suffix }}.zip lazybala-${{ matrix.suffix }}
+        sha256sum lazybala-${{ matrix.suffix }}.zip > lazybala-${{ matrix.suffix }}.zip.sha256
+
+    - name: Upload binary to release (Unix)
+      if: matrix.goos != 'windows'
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ needs.create-release.outputs.upload_url }}
+        asset_path: ./lazybala-${{ matrix.suffix }}.tar.gz
+        asset_name: lazybala-${{ matrix.suffix }}.tar.gz
+        asset_content_type: application/gzip
+
+    - name: Upload binary to release (Windows)
+      if: matrix.goos == 'windows'
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ needs.create-release.outputs.upload_url }}
+        asset_path: ./lazybala-${{ matrix.suffix }}.zip
+        asset_name: lazybala-${{ matrix.suffix }}.zip
+        asset_content_type: application/zip
+
+    - name: Upload checksum (Unix)
+      if: matrix.goos != 'windows'
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ needs.create-release.outputs.upload_url }}
+        asset_path: ./lazybala-${{ matrix.suffix }}.tar.gz.sha256
+        asset_name: lazybala-${{ matrix.suffix }}.tar.gz.sha256
+        asset_content_type: text/plain
+
+    - name: Upload checksum (Windows)
+      if: matrix.goos == 'windows'
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ needs.create-release.outputs.upload_url }}
+        asset_path: ./lazybala-${{ matrix.suffix }}.zip.sha256
+        asset_name: lazybala-${{ matrix.suffix }}.zip.sha256
+        asset_content_type: text/plain
+
+  build-docker:
+    name: Build and Push Docker Images
+    needs: create-release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Log in to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Log in to Docker Hub
+      if: secrets.DOCKERHUB_USERNAME && secrets.DOCKERHUB_TOKEN
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: |
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          ${{ secrets.DOCKERHUB_USERNAME && format('{0}/lazybala', secrets.DOCKERHUB_USERNAME) || '' }}
+        tags: |
+          type=semver,pattern={{version}}
+          type=semver,pattern={{major}}.{{minor}}
+          type=semver,pattern={{major}}
+          type=raw,value=latest
+
+    - name: Build and push Docker image
+      id: build
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        platforms: linux/amd64,linux/arm64
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        build-args: |
+          BUILDTIME=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] }}
+          VERSION=${{ needs.create-release.outputs.tag_name }}
+
+    - name: Generate artifact attestation
+      uses: actions/attest-build-provenance@v1
+      with:
+        subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
+        subject-digest: ${{ steps.build.outputs.digest }}
+        push-to-registry: true
+
+    - name: Update Docker Hub description
+      if: secrets.DOCKERHUB_USERNAME && secrets.DOCKERHUB_TOKEN
+      uses: peter-evans/dockerhub-description@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+        repository: ${{ secrets.DOCKERHUB_USERNAME }}/lazybala
+        readme-filepath: ./DOCKER.md

@@ -1,0 +1,2519 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LazyBala - 费劲巴拉下载器</title>
+  <meta name="description" content="LazyBala - 非专业的套壳下载工具，支持哔哩哔哩有声音频下载">
+  <meta name="keywords" content="下载工具,有声音频下载器">
+  <meta name="author" content="Kis2Show">
+  <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦫</text></svg>">
+  <style>
+    :root {
+      --bg-primary: #1c1c1e;
+      --bg-secondary: #2c2c2e;
+      --bg-tertiary: #3a3a3c;
+      --text-primary: #ffffff;
+      --text-secondary: #8e8e93;
+      --border-color: #48484a;
+      --primary-color: #ff6b35;
+      --primary-hover: #e55a2b;
+    }
+
+    [data-theme="light"] {
+      --bg-primary: #ffffff;
+      --bg-secondary: #f2f2f7;
+      --bg-tertiary: #e5e5ea;
+      --text-primary: #000000;
+      --text-secondary: #6d6d70;
+      --border-color: #c6c6c8;
+      --primary-color: #ff6b35;
+      --primary-hover: #e55a2b;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      margin: 0;
+      padding: 20px;
+      transition: all 0.3s ease;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .header {
+      background: var(--bg-secondary);
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .header-center {
+      flex: 1;
+      text-align: center;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .theme-toggle {
+      background: var(--bg-tertiary);
+      border: none;
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: var(--text-primary);
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+
+    .theme-toggle:hover {
+      background: var(--border-color);
+    }
+
+    .settings-btn {
+      background: var(--bg-tertiary);
+      border: none;
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: var(--text-primary);
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 0.2s;
+    }
+
+    .settings-btn:hover {
+      background: var(--border-color);
+    }
+
+    .input-box {
+      background: var(--bg-secondary);
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+
+    .input-field {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      font-size: 16px;
+      margin-bottom: 10px;
+      box-sizing: border-box;
+      transition: border-color 0.2s;
+    }
+
+    .input-field:focus {
+      outline: none;
+      border-color: var(--primary-color);
+    }
+
+    .btn {
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-right: 10px;
+      transition: all 0.2s;
+    }
+
+    .btn:hover {
+      background: var(--primary-hover);
+    }
+
+    .btn-secondary {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+    }
+
+    .btn-secondary:hover {
+      background: var(--border-color);
+    }
+
+    /* 设置弹窗 */
+    .settings-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+    }
+
+    .settings-modal.show {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .settings-content {
+      background: var(--bg-secondary);
+      border-radius: 12px;
+      padding: 24px;
+      max-width: 400px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .settings-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .settings-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 24px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      padding: 0;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .close-btn:hover {
+      color: var(--text-primary);
+    }
+
+    .setting-group {
+      margin-bottom: 20px;
+    }
+
+    .setting-label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    .setting-desc {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+
+    .setting-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .setting-switch {
+      position: relative;
+      width: 50px;
+      height: 28px;
+      background: var(--bg-tertiary);
+      border-radius: 14px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .setting-switch.active {
+      background: var(--primary-color);
+    }
+
+    .setting-switch::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 24px;
+      height: 24px;
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.3s;
+    }
+
+    .setting-switch.active::after {
+      transform: translateX(22px);
+    }
+
+    .setting-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px;
+      background: var(--bg-tertiary);
+      border-radius: 8px;
+      margin-bottom: 15px;
+    }
+
+    .setting-info.success {
+      background: rgba(52, 199, 89, 0.1);
+      border: 1px solid rgba(52, 199, 89, 0.3);
+    }
+
+    .setting-info.warning {
+      background: rgba(255, 149, 0, 0.1);
+      border: 1px solid rgba(255, 149, 0, 0.3);
+    }
+
+    .setting-info.error {
+      background: rgba(255, 59, 48, 0.1);
+      border: 1px solid rgba(255, 59, 48, 0.3);
+    }
+
+    .setting-tabs {
+      display: flex;
+      background: var(--bg-tertiary);
+      border-radius: 8px;
+      padding: 4px;
+      margin-bottom: 20px;
+    }
+
+    .setting-tab {
+      flex: 1;
+      padding: 8px 12px;
+      text-align: center;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      color: var(--text-secondary);
+      transition: all 0.2s;
+    }
+
+    .setting-tab.active {
+      background: var(--primary-color);
+      color: white;
+    }
+
+    .setting-content {
+      display: none;
+    }
+
+    .setting-content.active {
+      display: block;
+    }
+
+    .login-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px;
+      background: var(--bg-tertiary);
+      border-radius: 8px;
+      margin-bottom: 15px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--text-secondary);
+    }
+
+    .status-dot.online {
+      background: #34c759;
+    }
+
+    .status-dot.offline {
+      background: #ff3b30;
+    }
+
+    .qr-container {
+      text-align: center;
+      padding: 20px;
+      background: var(--bg-tertiary);
+      border-radius: 8px;
+      margin-bottom: 15px;
+    }
+
+    .qr-code {
+      width: 200px;
+      height: 200px;
+      margin: 0 auto 15px;
+      background: white;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #666;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .btn-group .btn {
+      flex: 1;
+      margin-right: 0;
+    }
+
+    /* 历史记录样式 */
+    .history-item {
+      display: flex;
+      align-items: center;
+      padding: 12px;
+      background: var(--bg-tertiary);
+      border-radius: 8px;
+      margin-bottom: 8px;
+      transition: all 0.2s;
+    }
+
+    .history-item:hover {
+      background: var(--border-color);
+    }
+
+    .history-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      background: var(--primary-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 12px;
+      font-size: 18px;
+    }
+
+    .history-icon.success {
+      background: #34c759;
+    }
+
+    .history-icon.error {
+      background: #ff3b30;
+    }
+
+    .history-icon.warning {
+      background: #ff9500;
+    }
+
+    .history-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .history-title {
+      font-weight: 500;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .history-meta {
+      font-size: 12px;
+      color: var(--text-secondary);
+      display: flex;
+      gap: 12px;
+    }
+
+    .history-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .history-btn {
+      padding: 4px 8px;
+      border: none;
+      border-radius: 4px;
+      font-size: 12px;
+      cursor: pointer;
+      background: var(--bg-primary);
+      color: var(--text-secondary);
+      transition: all 0.2s;
+    }
+
+    .history-btn:hover {
+      background: var(--border-color);
+      color: var(--text-primary);
+    }
+
+    /* 进度条样式 */
+    .mini-progress {
+      width: 60px;
+      height: 4px;
+      background: var(--bg-primary);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+
+    .mini-progress-fill {
+      height: 100%;
+      background: var(--primary-color);
+      transition: width 0.3s;
+    }
+
+    /* 键盘按键样式 */
+    kbd {
+      display: inline-block;
+      padding: 2px 6px;
+      font-size: 11px;
+      line-height: 1.4;
+      color: var(--text-primary);
+      background-color: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: 3px;
+      box-shadow: 0 1px 0 var(--border-color);
+      font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+      font-weight: 500;
+    }
+
+    /* 增强的进度显示样式 */
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .progress-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .progress-title h3 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .progress-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .download-phase {
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+      text-transform: uppercase;
+    }
+
+    .download-phase.initializing {
+      background: #007aff;
+      color: white;
+    }
+
+    .download-phase.extracting {
+      background: #ff9500;
+      color: white;
+    }
+
+    .download-phase.downloading {
+      background: #34c759;
+      color: white;
+    }
+
+    .download-phase.merging {
+      background: #af52de;
+      color: white;
+    }
+
+    .download-phase.completed {
+      background: #30d158;
+      color: white;
+    }
+
+    .download-phase.error {
+      background: #ff3b30;
+      color: white;
+    }
+
+    .ws-status {
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .ws-status.connected {
+      background: #30d158;
+      color: white;
+    }
+
+    .ws-status.disconnected {
+      background: #8e8e93;
+      color: white;
+    }
+
+    .progress-details {
+      margin-top: 15px;
+    }
+
+    .progress-detail-item {
+      margin: 8px 0;
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .progress-stats {
+      display: flex;
+      gap: 15px;
+      margin: 10px 0;
+      flex-wrap: wrap;
+    }
+
+    .progress-stat {
+      padding: 4px 8px;
+      background: var(--bg-tertiary);
+      border-radius: 6px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .metadata-container {
+      margin: 15px 0;
+      padding: 12px;
+      background: var(--bg-tertiary);
+      border-radius: 8px;
+      border-left: 3px solid var(--primary-color);
+    }
+
+    .metadata-item {
+      margin: 6px 0;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .completed-files {
+      margin: 15px 0;
+      padding: 12px;
+      background: var(--bg-tertiary);
+      border-radius: 8px;
+      border-left: 3px solid #30d158;
+      max-height: 120px;
+      overflow-y: auto;
+    }
+
+    .completed-title {
+      font-weight: 500;
+      margin-bottom: 8px;
+      color: var(--text-primary);
+    }
+
+    .completed-file {
+      margin: 4px 0;
+      font-size: 12px;
+      color: var(--text-secondary);
+      padding: 2px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-left">
+        <button class="theme-toggle" onclick="toggleTheme()" id="themeToggle">🌙</button>
+      </div>
+      <div class="header-center">
+        <h1>LazyBala</h1>
+        <p>费劲巴拉下载器</p>
+      </div>
+      <div class="header-right">
+        <button class="settings-btn" onclick="showSettings()">⚙️</button>
+      </div>
+    </div>
+
+    <div class="input-box">
+      <h3>输入链接</h3>
+      <input type="text" class="input-field" placeholder="https://www.bilibili.com/video/BV1YeXDYTELy" id="urlInput">
+      <input type="text" class="input-field" placeholder="保存路径: test" value="test" id="pathInput">
+
+      <button class="btn" onclick="testCheck()">检查列表</button>
+    </div>
+
+    <div class="input-box" id="resultBox" style="display: none;">
+      <h3>检查结果</h3>
+      <p id="resultText">等待检查...</p>
+      <button class="btn" onclick="testDownload()">开始下载</button>
+      <button class="btn btn-secondary" onclick="hideResult()">取消</button>
+    </div>
+
+    <div class="input-box" id="progressBox" style="display: none;">
+      <div class="progress-header">
+        <div class="progress-title">
+          <h3>下载进度</h3>
+          <span id="downloadPhase" class="download-phase"></span>
+        </div>
+        <div class="progress-controls">
+          <span id="wsStatus" class="ws-status">未连接</span>
+          <button class="btn btn-secondary" onclick="pauseResumeDownload()" id="pauseResumeBtn" style="display: none;">暂停下载</button>
+          <button class="btn btn-secondary" onclick="stopDownload()">停止下载</button>
+          <button class="btn" onclick="restartDownload()" id="restartBtn" style="display: none;">重新下载</button>
+        </div>
+      </div>
+
+      <div style="background: #3a3a3c; height: 10px; border-radius: 5px; margin: 10px 0;">
+        <div id="progressBar" style="background: #ff6b35; height: 100%; width: 0%; border-radius: 5px; transition: width 0.3s;"></div>
+      </div>
+
+      <div class="progress-details">
+        <p id="progressText">准备下载...</p>
+        <div id="currentFile" class="progress-detail-item"></div>
+        <div id="playlistProgress" class="progress-detail-item" style="display: none;"></div>
+
+        <div class="progress-stats">
+          <div id="downloadSpeed" class="progress-stat" style="display: none;"></div>
+          <div id="downloadETA" class="progress-stat" style="display: none;"></div>
+          <div id="fileSize" class="progress-stat" style="display: none;"></div>
+        </div>
+      </div>
+
+      <!-- 元数据信息 -->
+      <div id="metadata" class="metadata-container" style="display: none;"></div>
+
+      <!-- 已完成文件 -->
+      <div id="completedFiles" class="completed-files" style="display: none;"></div>
+    </div>
+  </div>
+
+  <!-- 设置弹窗 -->
+  <div class="settings-modal" id="settingsModal">
+    <div class="settings-content">
+      <div class="settings-header">
+        <h2 class="settings-title">设置</h2>
+        <button class="close-btn" onclick="hideSettings()">×</button>
+      </div>
+
+      <!-- 标签页 -->
+      <div class="setting-tabs">
+        <div class="setting-tab active" onclick="switchTab('download')">下载设置</div>
+        <div class="setting-tab" onclick="switchTab('account')">账号管理</div>
+        <div class="setting-tab" onclick="switchTab('history')">下载历史</div>
+        <div class="setting-tab" onclick="switchTab('about')">关于</div>
+      </div>
+
+      <!-- 下载设置标签页 -->
+      <div class="setting-content active" id="downloadTab">
+        <!-- 系统状态 -->
+        <div class="setting-info" id="systemStatus">
+          <span>🔧</span>
+          <div>
+            <div style="font-weight: 500;">系统状态</div>
+            <div style="font-size: 12px; color: var(--text-secondary);" id="systemStatusText">检查中...</div>
+          </div>
+        </div>
+
+        <div class="setting-group">
+          <label class="setting-label">保存路径</label>
+          <div class="setting-desc">下载文件的保存目录</div>
+          <input type="text" class="input-field" id="settingSavePath" placeholder="audiobooks/test">
+        </div>
+
+        <div class="setting-group">
+          <label class="setting-label">文件名格式</label>
+          <div class="setting-desc">下载文件的命名格式，支持 %(title)s, %(uploader)s 等变量</div>
+          <select class="input-field" id="settingTitleRegex">
+            <option value="%(title)s.%(ext)s">标题.扩展名</option>
+            <option value="%(uploader)s - %(title)s.%(ext)s">UP主 - 标题.扩展名</option>
+            <option value="[%(upload_date)s] %(title)s.%(ext)s">[日期] 标题.扩展名</option>
+            <option value="%(playlist_index)s. %(title)s.%(ext)s">序号. 标题.扩展名</option>
+            <option value="%(autonumber)s.%(ext)s">序号.扩展名</option>
+            <option value="custom">自定义格式</option>
+          </select>
+          <input type="text" class="input-field" id="customTitleRegex" placeholder="自定义格式" style="display: none; margin-top: 8px;">
+        </div>
+
+        <div class="setting-group">
+          <label class="setting-label">音质选择</label>
+          <div class="setting-desc">下载音频的质量设置</div>
+          <select class="input-field" id="settingQuality">
+            <option value="bestaudio/best">最佳音质 (推荐)</option>
+            <option value="bestaudio[ext=m4a]/best[ext=m4a]">M4A格式</option>
+            <option value="bestaudio[ext=mp3]/best[ext=mp3]">MP3格式</option>
+            <option value="bestaudio[ext=opus]/best[ext=opus]">OPUS格式</option>
+            <option value="worst">最低音质 (节省空间)</option>
+          </select>
+        </div>
+
+        <div class="setting-group">
+          <label class="setting-label">重试次数</label>
+          <div class="setting-desc">下载失败时的重试次数 (1-10)</div>
+          <input type="range" class="input-field" id="settingRetryCount" min="1" max="10" value="5" oninput="updateRetryDisplay(this.value)">
+          <div style="text-align: center; margin-top: 5px; font-size: 14px; color: var(--text-secondary);">
+            <span id="retryDisplay">5</span> 次
+          </div>
+        </div>
+
+        <div class="setting-group">
+          <div class="setting-row">
+            <div>
+              <div class="setting-label">下载封面</div>
+              <div class="setting-desc">同时下载视频封面图片</div>
+            </div>
+            <div class="setting-switch" id="thumbnailSwitch" onclick="toggleSwitch('thumbnailSwitch', 'settingWriteThumbnail')">
+            </div>
+          </div>
+          <input type="hidden" id="settingWriteThumbnail" value="true">
+        </div>
+
+        <div class="setting-group">
+          <div class="setting-row">
+            <div>
+              <div class="setting-label">自动重命名</div>
+              <div class="setting-desc">自动处理文件名中的特殊字符</div>
+            </div>
+            <div class="setting-switch active" id="autoRenameSwitch" onclick="toggleSwitch('autoRenameSwitch', 'settingAutoRename')">
+            </div>
+          </div>
+          <input type="hidden" id="settingAutoRename" value="true">
+        </div>
+
+        <div class="btn-group">
+          <button class="btn" onclick="saveSettings()">保存设置</button>
+          <button class="btn btn-secondary" onclick="resetSettings()">重置默认</button>
+        </div>
+      </div>
+
+      <!-- 账号管理标签页 -->
+      <div class="setting-content" id="accountTab">
+        <!-- 登录状态 -->
+        <div class="login-status" id="loginStatus">
+          <div class="status-dot offline" id="statusDot"></div>
+          <div>
+            <div style="font-weight: 500;" id="loginStatusText">未登录</div>
+            <div style="font-size: 12px; color: var(--text-secondary);" id="loginStatusDesc">登录后可下载会员专享内容</div>
+          </div>
+        </div>
+
+        <!-- 二维码登录 -->
+        <div class="qr-container" id="qrContainer" style="display: none;">
+          <div class="qr-code" id="qrCode">
+            <div>请使用哔哩哔哩APP扫码登录</div>
+          </div>
+          <div style="font-size: 14px; color: var(--text-secondary); margin-bottom: 10px;">
+            扫码后请在APP中确认登录
+          </div>
+          <div style="font-size: 12px; color: var(--text-secondary);">
+            二维码有效期: <span id="qrExpiry">180</span>秒
+          </div>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn" onclick="generateQRCode()" id="loginBtn">生成登录二维码</button>
+          <button class="btn btn-secondary" onclick="forceGenerateQRCode()" id="forceLoginBtn">强制重新登录</button>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-secondary" onclick="clearCookies()">清除登录信息</button>
+          <button class="btn btn-secondary" onclick="exportCookies()">导出Cookies</button>
+        </div>
+
+        <!-- 账号信息 -->
+        <div class="setting-group" id="accountInfo" style="display: none;">
+          <label class="setting-label">账号信息</label>
+          <div class="setting-info" id="userInfo">
+            <span>👤</span>
+            <div>
+              <div style="font-weight: 500;" id="userName">加载中...</div>
+              <div style="font-size: 12px; color: var(--text-secondary);" id="userLevel">获取用户信息中...</div>
+            </div>
+          </div>
+          <div class="setting-info" id="memberInfo" style="display: none;">
+            <span>💎</span>
+            <div>
+              <div style="font-weight: 500;" id="memberType">会员类型</div>
+              <div style="font-size: 12px; color: var(--text-secondary);" id="memberExpiry">到期时间</div>
+            </div>
+          </div>
+          <div class="setting-info" id="statsInfo" style="display: none;">
+            <span>📊</span>
+            <div>
+              <div style="font-weight: 500;">账号统计</div>
+              <div style="font-size: 12px; color: var(--text-secondary);" id="userStats">关注/粉丝/获赞</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 下载历史标签页 -->
+      <div class="setting-content" id="historyTab">
+        <!-- 统计信息 -->
+        <div class="setting-info">
+          <span>📊</span>
+          <div>
+            <div style="font-weight: 500;">下载统计</div>
+            <div style="font-size: 12px; color: var(--text-secondary);" id="downloadStats">总计下载: 0 个文件</div>
+          </div>
+        </div>
+
+        <!-- 筛选选项 -->
+        <div class="setting-group">
+          <label class="setting-label">筛选条件</label>
+          <div class="btn-group">
+            <button class="btn btn-secondary" onclick="filterHistory('all')" id="filterAll">全部</button>
+            <button class="btn btn-secondary" onclick="filterHistory('completed')" id="filterCompleted">已完成</button>
+            <button class="btn btn-secondary" onclick="filterHistory('failed')" id="filterFailed">失败</button>
+          </div>
+        </div>
+
+        <!-- 历史记录列表 -->
+        <div class="setting-group">
+          <label class="setting-label">下载历史</label>
+          <div id="historyList" style="max-height: 300px; overflow-y: auto;">
+            <div class="setting-info" style="text-align: center; color: var(--text-secondary);">
+              <span>📝</span>
+              <div>暂无下载记录</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 操作按钮 -->
+        <div class="btn-group">
+          <button class="btn btn-secondary" onclick="refreshHistory()">刷新历史</button>
+          <button class="btn btn-secondary" onclick="clearHistory()">清空历史</button>
+        </div>
+
+        <!-- 生产模式下隐藏导出和打开目录功能 -->
+        <div class="btn-group" style="display: none;">
+          <button class="btn btn-secondary" onclick="exportHistory()">导出历史</button>
+          <button class="btn btn-secondary" onclick="openDownloadFolder()">打开下载目录</button>
+        </div>
+      </div>
+
+      <!-- 关于标签页 -->
+      <div class="setting-content" id="aboutTab">
+        <div class="setting-info">
+          <span>🎵</span>
+          <div>
+            <div style="font-weight: 500;">LazyBala</div>
+            <div style="font-size: 12px; color: var(--text-secondary);">费劲巴拉下载器 v1.0.0</div>
+          </div>
+        </div>
+
+        <div class="setting-group">
+          <label class="setting-label">功能特色</label>
+          <div class="setting-desc">
+            • 支持哔哩哔哩音频下载<br>
+            • 批量下载播放列表<br>
+            • 自动获取最佳音质<br>
+            • 支持会员专享内容<br>
+            • 实时下载进度显示
+          </div>
+        </div>
+
+        <div class="setting-group">
+          <label class="setting-label">技术栈</label>
+          <div class="setting-desc">
+            • 后端: Go + Gin + WebSocket<br>
+            • 前端: 纯HTML + CSS + JavaScript<br>
+            • 下载: yt-dlp + ffmpeg<br>
+            • 容器: Docker支持
+          </div>
+        </div>
+
+        <div class="setting-group">
+          <label class="setting-label">快捷键</label>
+          <div class="setting-desc">
+            • <kbd>Ctrl/Cmd + Enter</kbd> 快速检查列表<br>
+            • <kbd>Ctrl/Cmd + ,</kbd> 打开设置<br>
+            • <kbd>Ctrl/Cmd + D</kbd> 切换主题<br>
+            • <kbd>Ctrl/Cmd + H</kbd> 查看历史<br>
+            • <kbd>Escape</kbd> 关闭设置
+          </div>
+        </div>
+
+        <div class="setting-group">
+          <label class="setting-label">版本信息</label>
+          <div class="setting-info" id="versionInfo">
+            <span>📦</span>
+            <div>
+              <div style="font-weight: 500;">检查更新</div>
+              <div style="font-size: 12px; color: var(--text-secondary);" id="versionText">当前版本: v1.0.0</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-secondary" onclick="checkUpdate()">检查更新</button>
+          <button class="btn btn-secondary" onclick="viewLogs()">查看日志</button>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-secondary" onclick="openGithub()">GitHub项目</button>
+          <button class="btn btn-secondary" onclick="reportIssue()">反馈问题</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    console.log('测试页面已加载');
+
+    // 全局变量
+    let downloadHistory = [];
+    let currentFilter = 'all';
+
+    // 主题管理
+    let currentTheme = localStorage.getItem('theme') || 'dark';
+
+    // 初始化主题
+    function initTheme() {
+      if (currentTheme === 'light') {
+        document.body.setAttribute('data-theme', 'light');
+        document.getElementById('themeToggle').textContent = '☀️';
+      } else {
+        document.body.removeAttribute('data-theme');
+        document.getElementById('themeToggle').textContent = '🌙';
+      }
+    }
+
+    // 切换主题
+    function toggleTheme() {
+      currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      localStorage.setItem('theme', currentTheme);
+      initTheme();
+    }
+
+    // 显示设置
+    function showSettings() {
+      loadSettings();
+      document.getElementById('settingsModal').classList.add('show');
+    }
+
+    // 隐藏设置
+    function hideSettings() {
+      document.getElementById('settingsModal').classList.remove('show');
+    }
+
+    // 加载设置
+    async function loadSettings() {
+      try {
+        const response = await fetch('/api/config');
+        if (response.ok) {
+          const config = await response.json();
+
+          // 基本设置
+          document.getElementById('settingSavePath').value = config.save_path || '';
+
+          // 文件名格式
+          const titleRegex = config.title_regex || '%(title)s.%(ext)s';
+          const titleSelect = document.getElementById('settingTitleRegex');
+          const customInput = document.getElementById('customTitleRegex');
+
+          // 检查是否是预设格式
+          let isCustom = true;
+          for (let option of titleSelect.options) {
+            if (option.value === titleRegex && option.value !== 'custom') {
+              titleSelect.value = titleRegex;
+              isCustom = false;
+              break;
+            }
+          }
+
+          if (isCustom) {
+            titleSelect.value = 'custom';
+            customInput.value = titleRegex;
+            customInput.style.display = 'block';
+          }
+
+          // 音质设置
+          document.getElementById('settingQuality').value = config.quality || 'bestaudio/best';
+
+          // 重试次数
+          const retryCount = config.retry_count || 5;
+          document.getElementById('settingRetryCount').value = retryCount;
+          document.getElementById('retryDisplay').textContent = retryCount;
+
+          // 开关设置
+          const writeThumbnail = config.write_thumbnail !== false;
+          document.getElementById('settingWriteThumbnail').value = writeThumbnail ? 'true' : 'false';
+          const thumbnailSwitch = document.getElementById('thumbnailSwitch');
+          if (writeThumbnail) {
+            thumbnailSwitch.classList.add('active');
+          } else {
+            thumbnailSwitch.classList.remove('active');
+          }
+
+          // 自动重命名默认开启
+          document.getElementById('settingAutoRename').value = 'true';
+          document.getElementById('autoRenameSwitch').classList.add('active');
+        }
+      } catch (error) {
+        console.error('加载设置失败:', error);
+      }
+    }
+
+    // 保存设置
+    async function saveSettings() {
+      // 获取文件名格式
+      const titleSelect = document.getElementById('settingTitleRegex');
+      let titleRegex = titleSelect.value;
+      if (titleRegex === 'custom') {
+        titleRegex = document.getElementById('customTitleRegex').value;
+      }
+
+      const settings = {
+        save_path: document.getElementById('settingSavePath').value,
+        title_regex: titleRegex,
+        quality: document.getElementById('settingQuality').value,
+        retry_count: parseInt(document.getElementById('settingRetryCount').value),
+        write_thumbnail: document.getElementById('settingWriteThumbnail').value === 'true',
+        auto_rename: document.getElementById('settingAutoRename').value === 'true'
+      };
+
+      try {
+        const response = await fetch('/api/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(settings)
+        });
+
+        if (response.ok) {
+          // 显示成功提示
+          const statusEl = document.getElementById('systemStatus');
+          const statusTextEl = document.getElementById('systemStatusText');
+          statusEl.className = 'setting-info success';
+          statusTextEl.textContent = '设置已保存';
+
+          setTimeout(() => {
+            checkSystemStatus();
+          }, 2000);
+        } else {
+          alert('保存设置失败');
+        }
+      } catch (error) {
+        console.error('保存设置失败:', error);
+        alert('保存设置失败');
+      }
+    }
+
+    // 重置设置
+    function resetSettings() {
+      document.getElementById('settingSavePath').value = '';
+      document.getElementById('settingTitleRegex').value = '%(title)s.%(ext)s';
+      document.getElementById('customTitleRegex').style.display = 'none';
+      document.getElementById('settingQuality').value = 'bestaudio/best';
+      document.getElementById('settingRetryCount').value = 5;
+      document.getElementById('retryDisplay').textContent = '5';
+
+      // 重置开关
+      document.getElementById('thumbnailSwitch').classList.add('active');
+      document.getElementById('settingWriteThumbnail').value = 'true';
+      document.getElementById('autoRenameSwitch').classList.add('active');
+      document.getElementById('settingAutoRename').value = 'true';
+    }
+
+    // 文件名格式选择事件
+    document.addEventListener('DOMContentLoaded', function() {
+      const titleSelect = document.getElementById('settingTitleRegex');
+      const customInput = document.getElementById('customTitleRegex');
+
+      titleSelect.addEventListener('change', function() {
+        if (this.value === 'custom') {
+          customInput.style.display = 'block';
+          customInput.focus();
+        } else {
+          customInput.style.display = 'none';
+        }
+      });
+    });
+
+    // 显示登录对话框
+    function showLoginDialog() {
+      alert('登录功能开发中...\n将支持二维码登录获取cookies');
+    }
+
+    // 清除cookies
+    async function clearCookies() {
+      if (confirm('确定要清除登录信息吗？\n清除后将无法下载会员专享内容。')) {
+        try {
+          // 发送清除cookies请求
+          const response = await fetch('/api/auth/logout', { method: 'POST' });
+
+          if (response.ok) {
+            // 更新UI状态
+            const statusDot = document.getElementById('statusDot');
+            const statusText = document.getElementById('loginStatusText');
+            const statusDesc = document.getElementById('loginStatusDesc');
+
+            statusDot.className = 'status-dot offline';
+            statusText.textContent = '未登录';
+            statusDesc.textContent = '登录后可下载会员专享内容';
+            document.getElementById('accountInfo').style.display = 'none';
+
+            // 隐藏二维码
+            document.getElementById('qrContainer').style.display = 'none';
+
+            // 更新系统状态
+            checkSystemStatus();
+
+            alert('登录信息已清除');
+          } else {
+            // 即使后端没有对应API，也模拟清除成功
+            alert('登录信息已清除');
+            updateLoginStatus();
+          }
+        } catch (error) {
+          console.error('清除登录信息失败:', error);
+          alert('清除登录信息失败: ' + error.message);
+        }
+      }
+    }
+
+    // 点击弹窗外部关闭
+    document.getElementById('settingsModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        hideSettings();
+      }
+    });
+
+    // 页面加载完成后初始化 (已移至WebSocket初始化处)
+
+    // 设置键盘快捷键
+    function setupKeyboardShortcuts() {
+      document.addEventListener('keydown', function(e) {
+        // Ctrl/Cmd + Enter: 快速检查列表
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+          e.preventDefault();
+          handleCheckList();
+        }
+
+        // Ctrl/Cmd + ,: 打开设置
+        if ((e.ctrlKey || e.metaKey) && e.key === ',') {
+          e.preventDefault();
+          showSettings();
+        }
+
+        // Escape: 关闭设置
+        if (e.key === 'Escape') {
+          hideSettings();
+        }
+
+        // Ctrl/Cmd + D: 切换主题
+        if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
+          e.preventDefault();
+          toggleTheme();
+        }
+
+        // Ctrl/Cmd + H: 查看历史
+        if ((e.ctrlKey || e.metaKey) && e.key === 'h') {
+          e.preventDefault();
+          showSettings();
+          setTimeout(() => switchTab('history'), 100);
+        }
+      });
+    }
+
+    // 标签页切换
+    function switchTab(tabName) {
+      // 移除所有活动状态
+      document.querySelectorAll('.setting-tab').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.setting-content').forEach(content => content.classList.remove('active'));
+
+      // 激活选中的标签页
+      event.target.classList.add('active');
+      document.getElementById(tabName + 'Tab').classList.add('active');
+
+      // 根据标签页执行相应操作
+      if (tabName === 'account') {
+        updateLoginStatus();
+      } else if (tabName === 'history') {
+        refreshHistory();
+      }
+    }
+
+    // 开关切换
+    function toggleSwitch(switchId, inputId) {
+      const switchEl = document.getElementById(switchId);
+      const inputEl = document.getElementById(inputId);
+
+      switchEl.classList.toggle('active');
+      inputEl.value = switchEl.classList.contains('active') ? 'true' : 'false';
+    }
+
+    // 更新重试次数显示
+    function updateRetryDisplay(value) {
+      document.getElementById('retryDisplay').textContent = value;
+    }
+
+    // 检查系统状态
+    async function checkSystemStatus() {
+      try {
+        const response = await fetch('/api/config');
+        if (response.ok) {
+          const config = await response.json();
+          const statusEl = document.getElementById('systemStatus');
+          const statusTextEl = document.getElementById('systemStatusText');
+
+          if (config.has_cookies && config.cookies_valid) {
+            statusEl.className = 'setting-info success';
+            statusTextEl.textContent = '系统正常，已登录';
+          } else {
+            statusEl.className = 'setting-info warning';
+            statusTextEl.textContent = '系统正常，未登录';
+          }
+        }
+      } catch (error) {
+        const statusEl = document.getElementById('systemStatus');
+        const statusTextEl = document.getElementById('systemStatusText');
+        statusEl.className = 'setting-info error';
+        statusTextEl.textContent = '系统连接失败';
+      }
+    }
+
+    // 更新登录状态
+    async function updateLoginStatus() {
+      try {
+        const response = await fetch('/api/config');
+        if (response.ok) {
+          const config = await response.json();
+          const statusDot = document.getElementById('statusDot');
+          const statusText = document.getElementById('loginStatusText');
+          const statusDesc = document.getElementById('loginStatusDesc');
+
+          if (config.has_cookies && config.cookies_valid) {
+            statusDot.className = 'status-dot online';
+            statusText.textContent = '已登录';
+            statusDesc.textContent = '可以下载会员专享内容';
+            document.getElementById('accountInfo').style.display = 'block';
+            // 获取用户信息
+            getUserInfo();
+          } else {
+            statusDot.className = 'status-dot offline';
+            statusText.textContent = '未登录';
+            statusDesc.textContent = '登录后可下载会员专享内容';
+            document.getElementById('accountInfo').style.display = 'none';
+          }
+        }
+      } catch (error) {
+        console.error('检查登录状态失败:', error);
+      }
+    }
+
+    // 获取用户信息
+    async function getUserInfo() {
+      try {
+        const response = await fetch('/api/user/info');
+        if (response.ok) {
+          const userInfo = await response.json();
+          updateUserInfoDisplay(userInfo);
+        } else {
+          // 如果API不存在，显示默认信息
+          updateUserInfoDisplay({
+            name: '已登录用户',
+            level: '等级信息获取中...',
+            vip_type: 0,
+            vip_status: 0
+          });
+        }
+      } catch (error) {
+        console.error('获取用户信息失败:', error);
+        // 显示默认信息
+        updateUserInfoDisplay({
+          name: '已登录用户',
+          level: '等级信息获取中...',
+          vip_type: 0,
+          vip_status: 0
+        });
+      }
+    }
+
+    // 更新用户信息显示
+    function updateUserInfoDisplay(userInfo) {
+      // 基本用户信息
+      const userNameEl = document.getElementById('userName');
+      const userLevelEl = document.getElementById('userLevel');
+
+      if (userNameEl) {
+        userNameEl.textContent = userInfo.name || '用户';
+      }
+
+      if (userLevelEl) {
+        userLevelEl.textContent = `等级 ${userInfo.level || 'N/A'}`;
+      }
+
+      // 会员信息
+      const memberInfoEl = document.getElementById('memberInfo');
+      const memberTypeEl = document.getElementById('memberType');
+      const memberExpiryEl = document.getElementById('memberExpiry');
+
+      if (userInfo.vip_status === 1) {
+        memberInfoEl.style.display = 'block';
+        const vipTypes = {
+          0: '无会员',
+          1: '月度大会员',
+          2: '年度大会员'
+        };
+        memberTypeEl.textContent = vipTypes[userInfo.vip_type] || '大会员';
+        memberExpiryEl.textContent = userInfo.vip_due_date ?
+          `到期时间: ${new Date(userInfo.vip_due_date * 1000).toLocaleDateString()}` :
+          '会员有效';
+      } else {
+        memberInfoEl.style.display = 'none';
+      }
+
+      // 统计信息
+      const statsInfoEl = document.getElementById('statsInfo');
+      const userStatsEl = document.getElementById('userStats');
+
+      if (userInfo.following !== undefined || userInfo.follower !== undefined) {
+        statsInfoEl.style.display = 'block';
+        userStatsEl.textContent = `关注: ${userInfo.following || 0} | 粉丝: ${userInfo.follower || 0}`;
+      } else {
+        statsInfoEl.style.display = 'none';
+      }
+    }
+
+    // 生成二维码
+    async function generateQRCode() {
+      try {
+        const response = await fetch('/api/qrcode/generate', { method: 'POST' });
+        if (response.ok) {
+          const data = await response.json();
+          console.log('二维码API响应:', data);
+
+          if (data.already_logged_in) {
+            // 已经登录，显示提示
+            alert(data.message || '已成功登录，不需要扫码');
+            updateLoginStatus(); // 更新登录状态显示
+            return;
+          }
+
+          if (data.qrcode && data.qrcode_key) {
+            const qrContainer = document.getElementById('qrContainer');
+            const qrCode = document.getElementById('qrCode');
+
+            qrCode.innerHTML = `<img src="data:image/png;base64,${data.qrcode}" style="width: 100%; height: 100%; object-fit: contain;">`;
+            qrContainer.style.display = 'block';
+
+            // 开始倒计时
+            startQRCountdown(180);
+
+            // 开始检查登录状态
+            checkQRLogin(data.qrcode_key);
+          } else {
+            alert('二维码数据格式错误');
+          }
+        } else {
+          const errorData = await response.json();
+          alert('生成二维码失败: ' + (errorData.error || '未知错误'));
+        }
+      } catch (error) {
+        console.error('生成二维码失败:', error);
+        alert('生成二维码失败: ' + error.message);
+      }
+    }
+
+    // 二维码倒计时
+    let qrTimer = null;
+    let qrCheckInterval = null;
+
+    function startQRCountdown(seconds) {
+      const expiryEl = document.getElementById('qrExpiry');
+      let remaining = seconds;
+
+      // 清除之前的定时器
+      if (qrTimer) {
+        clearInterval(qrTimer);
+      }
+
+      qrTimer = setInterval(() => {
+        remaining--;
+        expiryEl.textContent = remaining;
+
+        if (remaining <= 0) {
+          clearInterval(qrTimer);
+          // 清除登录检查定时器
+          if (qrCheckInterval) {
+            clearInterval(qrCheckInterval);
+          }
+          // 自动重新生成二维码，不显示提示
+          generateQRCode();
+        }
+      }, 1000);
+    }
+
+    // 检查二维码登录状态
+    async function checkQRLogin(qrcodeKey) {
+      // 清除之前的检查定时器
+      if (qrCheckInterval) {
+        clearInterval(qrCheckInterval);
+      }
+
+      qrCheckInterval = setInterval(async () => {
+        try {
+          const response = await fetch('/api/qrcode/scan', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ qrcode_key: qrcodeKey })
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            if (data.code === 0) {
+              clearInterval(qrCheckInterval);
+              clearInterval(qrTimer); // 清除倒计时
+              document.getElementById('qrContainer').style.display = 'none';
+              alert('登录成功！');
+              updateLoginStatus();
+              getUserInfo(); // 获取用户信息
+            }
+          }
+        } catch (error) {
+          console.error('检查登录状态失败:', error);
+        }
+      }, 2000);
+
+      // 3分钟后停止检查（由倒计时自动处理）
+      setTimeout(() => {
+        if (qrCheckInterval) {
+          clearInterval(qrCheckInterval);
+        }
+      }, 180000);
+    }
+
+    // 强制生成二维码
+    async function forceGenerateQRCode() {
+      try {
+        const response = await fetch('/api/qrcode/force-generate', { method: 'POST' });
+        if (response.ok) {
+          const data = await response.json();
+          console.log('强制生成二维码API响应:', data);
+
+          if (data.qrcode && data.qrcode_key) {
+            const qrContainer = document.getElementById('qrContainer');
+            const qrCode = document.getElementById('qrCode');
+
+            qrCode.innerHTML = `<img src="data:image/png;base64,${data.qrcode}" style="width: 100%; height: 100%; object-fit: contain;">`;
+            qrContainer.style.display = 'block';
+
+            // 开始倒计时
+            startQRCountdown(180);
+
+            // 开始检查登录状态
+            checkQRLogin(data.qrcode_key);
+          } else {
+            alert('二维码数据格式错误');
+          }
+        } else {
+          const errorData = await response.json();
+          alert('生成二维码失败: ' + (errorData.error || '未知错误'));
+        }
+      } catch (error) {
+        console.error('强制生成二维码失败:', error);
+        alert('强制生成二维码失败: ' + error.message);
+      }
+    }
+
+    // 导出Cookies
+    async function exportCookies() {
+      try {
+        const response = await fetch('/api/auth/export-cookies');
+        if (response.ok) {
+          const data = await response.json();
+
+          if (data.cookies) {
+            // 创建下载链接
+            const cookiesText = data.cookies;
+            const blob = new Blob([cookiesText], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `bilibili_cookies_${new Date().toISOString().split('T')[0]}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            alert('Cookies导出成功！');
+          } else {
+            alert('没有可导出的Cookies');
+          }
+        } else {
+          // 如果API不存在，尝试读取本地cookies文件
+          const fallbackResponse = await fetch('/cookies/cookies.txt');
+          if (fallbackResponse.ok) {
+            const cookiesText = await fallbackResponse.text();
+            const blob = new Blob([cookiesText], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `bilibili_cookies_${new Date().toISOString().split('T')[0]}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            alert('Cookies导出成功！');
+          } else {
+            alert('没有找到Cookies文件');
+          }
+        }
+      } catch (error) {
+        console.error('导出Cookies失败:', error);
+        alert('导出Cookies失败: ' + error.message);
+      }
+    }
+
+    // 检查更新
+    async function checkUpdate() {
+      try {
+        const response = await fetch('/api/version/check');
+        if (response.ok) {
+          const data = await response.json();
+          alert(`当前版本: ${data.current}\n最新版本: ${data.latest}\n${data.has_update ? '发现新版本！' : '已是最新版本'}`);
+        }
+      } catch (error) {
+        alert('检查更新失败');
+      }
+    }
+
+    // 查看日志
+    function viewLogs() {
+      window.open('/logs', '_blank');
+    }
+
+    // 打开GitHub
+    function openGithub() {
+      window.open('https://github.com/kis2show/lazybala', '_blank');
+    }
+
+    // 反馈问题
+    function reportIssue() {
+      window.open('https://github.com/kis2show/lazybala/issues', '_blank');
+    }
+
+    // 历史记录相关功能
+    // 刷新历史记录
+    async function refreshHistory() {
+      try {
+        const response = await fetch('/api/download/history');
+        if (response.ok) {
+          const data = await response.json();
+          downloadHistory = data.tasks || [];
+          console.log('获取到历史记录:', downloadHistory);
+          console.log('已完成记录数量:', downloadHistory.filter(item => item.status === 'completed').length);
+          updateHistoryDisplay();
+          updateDownloadStats();
+        } else {
+          // 如果API不存在，使用模拟数据
+          loadMockHistory();
+        }
+      } catch (error) {
+        console.error('获取历史记录失败:', error);
+        loadMockHistory();
+      }
+    }
+
+    // 加载模拟历史数据
+    function loadMockHistory() {
+      downloadHistory = [
+        {
+          id: 1,
+          title: '【音乐】夜的钢琴曲五',
+          url: 'https://www.bilibili.com/video/BV1234567890',
+          status: 'completed',
+          progress: 100,
+          created_at: '2024-01-15 14:30:00',
+          file_size: '5.2MB',
+          duration: '3:45'
+        },
+        {
+          id: 2,
+          title: '【ASMR】雨声白噪音 - 助眠音频',
+          url: 'https://www.bilibili.com/video/BV0987654321',
+          status: 'completed',
+          progress: 100,
+          created_at: '2024-01-14 20:15:00',
+          file_size: '12.8MB',
+          duration: '8:20'
+        },
+        {
+          id: 3,
+          title: '【教程】JavaScript入门到精通',
+          url: 'https://www.bilibili.com/video/BV1111111111',
+          status: 'failed',
+          progress: 45,
+          created_at: '2024-01-13 16:45:00',
+          file_size: '0MB',
+          error: '网络连接超时'
+        },
+        {
+          id: 4,
+          title: '【音乐】Lo-Fi Hip Hop Mix',
+          url: 'https://www.bilibili.com/video/BV2222222222',
+          status: 'downloading',
+          progress: 78,
+          created_at: '2024-01-15 15:20:00',
+          file_size: '8.5MB',
+          duration: '5:30'
+        }
+      ];
+      updateHistoryDisplay();
+      updateDownloadStats();
+    }
+
+    // 更新历史记录显示
+    function updateHistoryDisplay() {
+      const historyList = document.getElementById('historyList');
+      const filteredHistory = filterHistoryData();
+
+      if (filteredHistory.length === 0) {
+        historyList.innerHTML = `
+          <div class="setting-info" style="text-align: center; color: var(--text-secondary);">
+            <span>📝</span>
+            <div>暂无${getFilterText()}记录</div>
+          </div>
+        `;
+        return;
+      }
+
+      historyList.innerHTML = filteredHistory.map(item => createHistoryItem(item)).join('');
+    }
+
+    // 筛选历史数据
+    function filterHistoryData() {
+      if (currentFilter === 'all') return downloadHistory;
+      return downloadHistory.filter(item => {
+        if (currentFilter === 'completed') return item.status === 'completed';
+        if (currentFilter === 'failed') return item.status === 'failed';
+        return false;
+      });
+    }
+
+    // 获取筛选文本
+    function getFilterText() {
+      switch (currentFilter) {
+        case 'completed': return '已完成';
+        case 'failed': return '失败';
+        default: return '';
+      }
+    }
+
+    // 创建历史记录项
+    function createHistoryItem(item) {
+      const icon = getStatusIcon(item.status);
+      const iconClass = getStatusClass(item.status);
+      const timeAgo = getTimeAgo(item.created_at);
+
+      return `
+        <div class="history-item">
+          <div class="history-icon ${iconClass}">
+            ${icon}
+          </div>
+          <div class="history-content">
+            <div class="history-title">${item.title}</div>
+            <div class="history-meta">
+              <span>${timeAgo}</span>
+              <span>${item.file_size || '未知大小'}</span>
+              ${item.duration ? `<span>${item.duration}</span>` : ''}
+              ${item.error ? `<span style="color: #ff3b30;">错误: ${item.error}</span>` : ''}
+            </div>
+            ${item.status === 'downloading' ? `
+              <div class="mini-progress">
+                <div class="mini-progress-fill" style="width: ${item.progress}%"></div>
+              </div>
+            ` : ''}
+          </div>
+          <div class="history-actions">
+            <button class="history-btn" onclick="copyUrl('${item.url}')">复制链接</button>
+            ${item.status === 'failed' ? '<button class="history-btn" onclick="retryDownload(' + item.id + ')">重试</button>' : ''}
+            <button class="history-btn" onclick="deleteHistoryItem(' + item.id + ')">删除</button>
+          </div>
+        </div>
+      `;
+    }
+
+    // 获取状态图标
+    function getStatusIcon(status) {
+      switch (status) {
+        case 'completed': return '✅';
+        case 'failed': return '❌';
+        case 'downloading': return '⬇️';
+        default: return '📄';
+      }
+    }
+
+    // 获取状态样式类
+    function getStatusClass(status) {
+      switch (status) {
+        case 'completed': return 'success';
+        case 'failed': return 'error';
+        case 'downloading': return 'warning';
+        default: return '';
+      }
+    }
+
+    // 获取相对时间
+    function getTimeAgo(dateString) {
+      const date = new Date(dateString);
+      const now = new Date();
+      const diffMs = now - date;
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMins / 60);
+      const diffDays = Math.floor(diffHours / 24);
+
+      if (diffMins < 1) return '刚刚';
+      if (diffMins < 60) return `${diffMins}分钟前`;
+      if (diffHours < 24) return `${diffHours}小时前`;
+      if (diffDays < 7) return `${diffDays}天前`;
+      return date.toLocaleDateString();
+    }
+
+    // 更新下载统计
+    function updateDownloadStats() {
+      const completed = downloadHistory.filter(item => item.status === 'completed').length;
+      const failed = downloadHistory.filter(item => item.status === 'failed').length;
+      const total = downloadHistory.length;
+
+      document.getElementById('downloadStats').textContent =
+        `总计: ${total} | 成功: ${completed} | 失败: ${failed}`;
+    }
+
+    // 筛选历史记录
+    function filterHistory(type) {
+      currentFilter = type;
+
+      // 更新按钮状态 - 重置所有筛选按钮
+      const allButtons = ['filterAll', 'filterCompleted', 'filterFailed'];
+      allButtons.forEach(btnId => {
+        const btn = document.getElementById(btnId);
+        if (btn) {
+          btn.style.background = 'var(--bg-tertiary)';
+          btn.style.color = 'var(--text-primary)';
+        }
+      });
+
+      // 激活选中的按钮
+      const activeBtn = document.getElementById('filter' + type.charAt(0).toUpperCase() + type.slice(1));
+      if (activeBtn) {
+        activeBtn.style.background = 'var(--accent-color)';
+        activeBtn.style.color = 'white';
+      }
+
+      updateHistoryDisplay();
+    }
+
+    // 复制链接
+    function copyUrl(url) {
+      navigator.clipboard.writeText(url).then(() => {
+        alert('链接已复制到剪贴板');
+      }).catch(() => {
+        alert('复制失败，请手动复制: ' + url);
+      });
+    }
+
+    // 打开文件
+    function openFile(id) {
+      alert('打开文件功能开发中...');
+    }
+
+    // 重试下载
+    function retryDownload(id) {
+      const item = downloadHistory.find(h => h.id === id);
+      if (item) {
+        document.getElementById('urlInput').value = item.url;
+        hideSettings();
+        alert('已填入链接，请点击检查列表重新下载');
+      }
+    }
+
+    // 删除历史记录项
+    function deleteHistoryItem(id) {
+      if (confirm('确定要删除这条记录吗？')) {
+        downloadHistory = downloadHistory.filter(item => item.id !== id);
+        updateHistoryDisplay();
+        updateDownloadStats();
+      }
+    }
+
+    // 清空历史记录
+    function clearHistory() {
+      if (confirm('确定要清空所有历史记录吗？\n此操作不可恢复。')) {
+        downloadHistory = [];
+        updateHistoryDisplay();
+        updateDownloadStats();
+        alert('历史记录已清空');
+      }
+    }
+
+    // 导出历史记录
+    function exportHistory() {
+      const data = JSON.stringify(downloadHistory, null, 2);
+      const blob = new Blob([data], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `lazybala_history_${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // 打开下载目录
+    function openDownloadFolder() {
+      alert('打开下载目录功能需要系统支持');
+    }
+
+    // 测试检查功能
+    async function testCheck() {
+      const url = document.getElementById('urlInput').value.trim();
+      if (!url) {
+        alert('请输入链接');
+        return;
+      }
+
+      console.log('检查链接:', url);
+
+      // 禁用按钮并显示加载状态
+      const checkBtn = document.querySelector('button[onclick="testCheck()"]');
+      const originalText = checkBtn.textContent;
+      checkBtn.disabled = true;
+      checkBtn.textContent = '检查中...';
+
+      try {
+        const response = await fetch('/api/download/precheck', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: url })
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          document.getElementById('resultText').textContent = `${result.title} - 共${result.audio_count}集`;
+          document.getElementById('resultBox').style.display = 'block';
+
+          // 更新按钮文本为"确认下载"
+          const downloadBtn = document.querySelector('#resultBox button[onclick="testDownload()"]');
+          if (downloadBtn) {
+            downloadBtn.textContent = '确认下载';
+          }
+        } else {
+          const error = await response.json();
+          alert('检查失败: ' + (error.error || '未知错误'));
+        }
+      } catch (error) {
+        console.error('检查失败:', error);
+        alert('检查失败: ' + error.message);
+      } finally {
+        // 恢复按钮状态
+        checkBtn.disabled = false;
+        checkBtn.textContent = originalText;
+      }
+    }
+
+    // 快捷键处理检查列表
+    function handleCheckList() {
+      testCheck();
+    }
+
+    // 测试下载功能
+    async function testDownload() {
+      const url = document.getElementById('urlInput').value.trim();
+      const path = document.getElementById('pathInput').value.trim() || 'test';
+
+      // 禁用按钮并显示加载状态
+      const downloadBtn = document.querySelector('#resultBox button[onclick="testDownload()"]');
+      const originalText = downloadBtn.textContent;
+      downloadBtn.disabled = true;
+      downloadBtn.textContent = '启动中...';
+
+      try {
+        // 首先检查是否有活跃的下载任务
+        const statusResponse = await fetch('/api/download/status');
+        if (statusResponse.ok) {
+          const status = await statusResponse.json();
+          if (status.isDownloading) {
+            // 如果有活跃下载，询问用户是否停止
+            if (confirm('检测到有正在进行的下载任务，是否停止当前任务并开始新的下载？')) {
+              downloadBtn.textContent = '停止中...';
+              await fetch('/api/download/stop', { method: 'POST' });
+              // 等待2秒确保任务完全停止
+              await new Promise(resolve => setTimeout(resolve, 2000));
+              downloadBtn.textContent = '启动中...';
+            } else {
+              downloadBtn.disabled = false;
+              downloadBtn.textContent = originalText;
+              return;
+            }
+          }
+        }
+
+        // 获取当前设置
+        const configResponse = await fetch('/api/config');
+        let config = {};
+        if (configResponse.ok) {
+          config = await configResponse.json();
+        }
+
+        const response = await fetch('/api/download', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            url: url,
+            save_path: path,
+            title_regex: config.title_regex || '%(title)s.%(ext)s',
+            quality: config.quality || 'bestaudio/best',
+            retry_count: config.retry_count || 5,
+            write_thumbnail: config.write_thumbnail !== false
+          })
+        });
+
+        if (response.ok) {
+          document.getElementById('progressBox').style.display = 'block';
+          document.getElementById('resultBox').style.display = 'none';
+
+          // 重置进度显示
+          document.getElementById('progressBar').style.width = '0%';
+          document.getElementById('progressText').textContent = '准备下载...';
+
+          // 确保WebSocket连接
+          if (!isConnected) {
+            connectWebSocket();
+          }
+        } else {
+          const error = await response.json();
+
+          // 如果仍然有冲突，提供更详细的错误处理
+          if (response.status === 409) {
+            if (confirm('仍有下载任务在运行，是否强制停止并重试？')) {
+              await fetch('/api/download/stop', { method: 'POST' });
+              await new Promise(resolve => setTimeout(resolve, 3000));
+              // 递归重试
+              downloadBtn.disabled = false;
+              downloadBtn.textContent = originalText;
+              return testDownload();
+            }
+          } else {
+            alert('下载失败: ' + (error.error || '未知错误'));
+          }
+
+          // 恢复按钮状态
+          downloadBtn.disabled = false;
+          downloadBtn.textContent = originalText;
+        }
+      } catch (error) {
+        console.error('下载失败:', error);
+        alert('下载失败: ' + error.message);
+        // 恢复按钮状态
+        downloadBtn.disabled = false;
+        downloadBtn.textContent = originalText;
+      }
+    }
+
+    // 模拟进度更新
+    function startProgressUpdate() {
+      let progress = 0;
+      const interval = setInterval(() => {
+        progress += Math.random() * 10;
+        if (progress >= 100) {
+          progress = 100;
+          clearInterval(interval);
+          document.getElementById('progressText').textContent = '下载完成！';
+        }
+
+        document.getElementById('progressBar').style.width = progress + '%';
+        document.getElementById('progressText').textContent = `下载进度: ${Math.round(progress)}%`;
+      }, 500);
+    }
+
+    // 隐藏结果
+    function hideResult() {
+      document.getElementById('resultBox').style.display = 'none';
+    }
+
+    // 停止下载
+    async function stopDownload() {
+      const stopBtn = document.querySelector('button[onclick="stopDownload()"]');
+
+      // 检查按钮是否已禁用（下载完成状态）
+      if (stopBtn.disabled) {
+        return;
+      }
+
+      if (!confirm('确定要停止当前下载吗？')) {
+        return;
+      }
+
+      const originalText = stopBtn.textContent;
+      stopBtn.disabled = true;
+      stopBtn.textContent = '停止中...';
+
+      try {
+        const response = await fetch('/api/download/stop', { method: 'POST' });
+
+        if (response.ok) {
+          // 更新UI状态
+          document.getElementById('progressText').textContent = '下载已停止';
+
+          // 更新阶段状态
+          const phaseEl = document.getElementById('downloadPhase');
+          if (phaseEl) {
+            phaseEl.textContent = '已停止';
+            phaseEl.className = 'download-phase error';
+          }
+
+          // 3秒后隐藏进度框
+          setTimeout(() => {
+            document.getElementById('progressBox').style.display = 'none';
+          }, 3000);
+        } else {
+          alert('停止下载失败');
+          stopBtn.disabled = false;
+          stopBtn.textContent = originalText;
+        }
+      } catch (error) {
+        console.error('停止下载失败:', error);
+        alert('停止下载失败: ' + error.message);
+        stopBtn.disabled = false;
+        stopBtn.textContent = originalText;
+      }
+    }
+
+
+
+    // 获取状态文本
+    function getStatusText(status) {
+      const statusMap = {
+        'completed': '已完成',
+        'failed': '失败',
+        'downloading': '下载中',
+        'stopped': '已停止',
+        'pending': '等待中',
+        'paused': '已暂停'
+      };
+      return statusMap[status] || status;
+    }
+
+    // 暂停/恢复下载
+    async function pauseResumeDownload() {
+      const pauseBtn = document.getElementById('pauseResumeBtn');
+      const isPaused = pauseBtn.textContent.includes('恢复');
+      const action = isPaused ? 'resume' : 'pause';
+
+      const originalText = pauseBtn.textContent;
+      pauseBtn.disabled = true;
+      pauseBtn.textContent = isPaused ? '恢复中...' : '暂停中...';
+
+      try {
+        const response = await fetch(`/api/download/${action}`, { method: 'POST' });
+
+        if (response.ok) {
+          // 更新按钮状态
+          pauseBtn.textContent = isPaused ? '暂停下载' : '恢复下载';
+
+          // 更新进度文本
+          const progressText = document.getElementById('progressText');
+          if (progressText) {
+            if (isPaused) {
+              progressText.textContent = progressText.textContent.replace('已暂停', '下载中');
+            } else {
+              progressText.textContent = progressText.textContent + ' (已暂停)';
+            }
+          }
+
+          // 更新阶段状态
+          const phaseEl = document.getElementById('downloadPhase');
+          if (phaseEl) {
+            if (isPaused) {
+              phaseEl.textContent = '下载中';
+              phaseEl.className = 'download-phase downloading';
+            } else {
+              phaseEl.textContent = '已暂停';
+              phaseEl.className = 'download-phase warning';
+            }
+          }
+        } else {
+          alert(`${isPaused ? '恢复' : '暂停'}下载失败`);
+          pauseBtn.textContent = originalText;
+        }
+      } catch (error) {
+        console.error(`${action}下载失败:`, error);
+        alert(`${isPaused ? '恢复' : '暂停'}下载失败: ` + error.message);
+        pauseBtn.textContent = originalText;
+      } finally {
+        pauseBtn.disabled = false;
+      }
+    }
+
+    // 重新下载
+    async function restartDownload() {
+      if (!confirm('确定要重新下载当前项目吗？\n这将清除当前进度并重新开始。')) {
+        return;
+      }
+
+      const restartBtn = document.getElementById('restartBtn');
+      const originalText = restartBtn.textContent;
+      restartBtn.disabled = true;
+      restartBtn.textContent = '重启中...';
+
+      try {
+        // 先停止当前下载
+        await fetch('/api/download/stop', { method: 'POST' });
+
+        // 等待一秒后重新开始
+        setTimeout(async () => {
+          try {
+            await testDownload();
+            restartBtn.style.display = 'none';
+          } catch (error) {
+            console.error('重新下载失败:', error);
+            alert('重新下载失败: ' + error.message);
+            restartBtn.disabled = false;
+            restartBtn.textContent = originalText;
+          }
+        }, 1000);
+      } catch (error) {
+        console.error('重新下载失败:', error);
+        alert('重新下载失败: ' + error.message);
+        restartBtn.disabled = false;
+        restartBtn.textContent = originalText;
+      }
+    }
+
+    // WebSocket连接和进度更新
+    let ws = null;
+    let isConnected = false;
+    let reconnectAttempts = 0;
+    const maxReconnectAttempts = 5;
+
+    // 生产环境配置
+    const appConfig = {
+      wsUrl: `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/ws`,
+      apiBase: '/api',
+      reconnectInterval: 3000,
+      heartbeatInterval: 30000,
+      version: '1.0.0'
+    };
+
+    function connectWebSocket() {
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        console.log('WebSocket已连接');
+        return;
+      }
+
+      console.log('连接WebSocket:', appConfig.wsUrl);
+
+      ws = new WebSocket(appConfig.wsUrl);
+
+      ws.onopen = function() {
+        console.log('WebSocket连接成功');
+        isConnected = true;
+        reconnectAttempts = 0; // 重置重连计数
+        updateConnectionStatus(true);
+      };
+
+      ws.onmessage = function(event) {
+        console.log('收到WebSocket消息:', event.data);
+        try {
+          const message = JSON.parse(event.data);
+          if (message.type === 'progress') {
+            updateProgressDisplay(message.data);
+          }
+        } catch (e) {
+          console.error('解析WebSocket消息失败:', e);
+        }
+      };
+
+      ws.onclose = function() {
+        console.log('WebSocket连接关闭');
+        isConnected = false;
+        updateConnectionStatus(false);
+
+        // 智能重连机制
+        if (reconnectAttempts < maxReconnectAttempts) {
+          reconnectAttempts++;
+          const delay = Math.min(appConfig.reconnectInterval * reconnectAttempts, 30000);
+          console.log(`${delay}ms后尝试第${reconnectAttempts}次重连`);
+          setTimeout(connectWebSocket, delay);
+        } else {
+          console.log('达到最大重连次数，停止重连');
+        }
+      };
+
+      ws.onerror = function(error) {
+        console.error('WebSocket错误:', error);
+        isConnected = false;
+        updateConnectionStatus(false);
+      };
+    }
+
+    // 更新连接状态
+    function updateConnectionStatus(connected) {
+      const statusEl = document.getElementById('wsStatus');
+      if (statusEl) {
+        statusEl.textContent = connected ? '已连接' : '未连接';
+        statusEl.className = connected ? 'ws-status connected' : 'ws-status disconnected';
+      }
+    }
+
+    // 更新进度显示
+    function updateProgressDisplay(progress) {
+      console.log('更新进度显示:', progress);
+
+      // 显示进度框
+      document.getElementById('progressBox').style.display = 'block';
+
+      // 检查下载是否完成
+      const isCompleted = progress.phase === 'completed' || (!progress.isDownloading && progress.progress >= 100);
+
+      // 更新停止下载按钮状态
+      const stopButton = document.querySelector('button[onclick="stopDownload()"]');
+      if (stopButton) {
+        stopButton.disabled = isCompleted;
+        stopButton.style.opacity = isCompleted ? '0.5' : '1';
+        stopButton.style.cursor = isCompleted ? 'not-allowed' : 'pointer';
+      }
+
+      // 更新暂停/恢复按钮状态
+      const pauseButton = document.getElementById('pauseResumeBtn');
+      if (pauseButton) {
+        if (progress.isDownloading && !isCompleted) {
+          pauseButton.style.display = 'inline-block';
+          pauseButton.disabled = false;
+
+          // 根据暂停状态更新按钮文本
+          if (progress.isPaused) {
+            pauseButton.textContent = '恢复下载';
+          } else {
+            pauseButton.textContent = '暂停下载';
+          }
+        } else {
+          pauseButton.style.display = 'none';
+        }
+      }
+
+      // 更新重新下载按钮状态
+      const restartButton = document.getElementById('restartBtn');
+      if (restartButton) {
+        if (isCompleted || (!progress.isDownloading && progress.progress > 0)) {
+          restartButton.style.display = 'inline-block';
+          restartButton.disabled = false;
+        } else {
+          restartButton.style.display = 'none';
+        }
+      }
+
+      // 如果下载完成且不再下载中，保持显示但禁用控制
+      if (!progress.isDownloading && isCompleted) {
+        console.log('下载已完成，保持显示进度框');
+        // 不隐藏进度框，让用户看到完成状态
+      }
+
+      // 更新基本进度信息
+      const progressBar = document.getElementById('progressBar');
+      const progressText = document.getElementById('progressText');
+      const statusText = document.getElementById('statusText');
+
+      if (progressBar) {
+        progressBar.style.width = `${progress.progress || 0}%`;
+      }
+
+      if (progressText) {
+        progressText.textContent = `${(progress.progress || 0).toFixed(1)}%`;
+      }
+
+      if (statusText) {
+        statusText.textContent = progress.status || '下载中...';
+      }
+
+      // 更新详细信息
+      updateDetailedProgress(progress);
+    }
+
+    // 更新详细进度信息
+    function updateDetailedProgress(progress) {
+      // 更新当前文件信息
+      const currentFileEl = document.getElementById('currentFile');
+      if (currentFileEl && progress.currentTitle) {
+        currentFileEl.textContent = `当前: ${progress.currentTitle}`;
+      }
+
+      // 更新播放列表进度
+      const playlistProgressEl = document.getElementById('playlistProgress');
+      if (playlistProgressEl && progress.totalCount > 0) {
+        let progressText = `项目: ${progress.currentIndex || 0}/${progress.totalCount}`;
+        if (progress.fileProgress !== undefined && progress.fileProgress !== progress.progress) {
+          progressText += ` (当前文件: ${progress.fileProgress.toFixed(1)}%)`;
+        }
+        playlistProgressEl.textContent = progressText;
+        playlistProgressEl.style.display = 'block';
+      } else if (playlistProgressEl) {
+        playlistProgressEl.style.display = 'none';
+      }
+
+      // 更新速度和ETA
+      const speedEl = document.getElementById('downloadSpeed');
+      if (speedEl && progress.speed) {
+        speedEl.textContent = `速度: ${progress.speed}`;
+        speedEl.style.display = 'block';
+      } else if (speedEl) {
+        speedEl.style.display = 'none';
+      }
+
+      const etaEl = document.getElementById('downloadETA');
+      if (etaEl && progress.eta) {
+        etaEl.textContent = `剩余: ${progress.eta}`;
+        etaEl.style.display = 'block';
+      } else if (etaEl) {
+        etaEl.style.display = 'none';
+      }
+
+      // 更新文件大小
+      const fileSizeEl = document.getElementById('fileSize');
+      if (fileSizeEl && progress.fileSize) {
+        fileSizeEl.textContent = `大小: ${progress.fileSize}`;
+        fileSizeEl.style.display = 'block';
+      } else if (fileSizeEl) {
+        fileSizeEl.style.display = 'none';
+      }
+
+      // 更新阶段信息
+      const phaseEl = document.getElementById('downloadPhase');
+      if (phaseEl && progress.phase) {
+        const phaseText = getPhaseText(progress.phase);
+        phaseEl.textContent = phaseText;
+        phaseEl.className = `download-phase ${progress.phase}`;
+      }
+
+      // 更新元数据信息
+      updateMetadataDisplay(progress);
+
+      // 更新已完成文件列表
+      updateCompletedFiles(progress.completedFiles);
+    }
+
+    // 获取阶段文本
+    function getPhaseText(phase) {
+      const phaseMap = {
+        'initializing': '初始化中',
+        'extracting': '提取信息中',
+        'downloading': '下载中',
+        'merging': '合并中',
+        'completed': '已完成',
+        'error': '出现错误'
+      };
+      return phaseMap[phase] || phase;
+    }
+
+    // 更新元数据显示
+    function updateMetadataDisplay(progress) {
+      const metadataEl = document.getElementById('metadata');
+      if (!metadataEl) return;
+
+      let metadataHtml = '';
+
+      if (progress.duration) {
+        metadataHtml += `<div class="metadata-item">⏱️ 时长: ${progress.duration}</div>`;
+      }
+
+      if (progress.uploader) {
+        metadataHtml += `<div class="metadata-item">👤 上传者: ${progress.uploader}</div>`;
+      }
+
+      if (progress.viewCount) {
+        metadataHtml += `<div class="metadata-item">👁️ 播放量: ${progress.viewCount}</div>`;
+      }
+
+      if (progress.playlistTitle) {
+        metadataHtml += `<div class="metadata-item">📋 播放列表: ${progress.playlistTitle}</div>`;
+      }
+
+      metadataEl.innerHTML = metadataHtml;
+      metadataEl.style.display = metadataHtml ? 'block' : 'none';
+    }
+
+    // 更新已完成文件列表
+    function updateCompletedFiles(completedFiles) {
+      const completedEl = document.getElementById('completedFiles');
+      if (!completedEl || !completedFiles || completedFiles.length === 0) {
+        if (completedEl) completedEl.style.display = 'none';
+        return;
+      }
+
+      const filesHtml = completedFiles.map(file =>
+        `<div class="completed-file">✅ ${file}</div>`
+      ).join('');
+
+      completedEl.innerHTML = `<div class="completed-title">已完成:</div>${filesHtml}`;
+      completedEl.style.display = 'block';
+    }
+
+    // 页面加载时连接WebSocket
+    document.addEventListener('DOMContentLoaded', function() {
+      try {
+        console.log(`LazyBala v${appConfig.version} 初始化中...`);
+
+        // 初始化主题
+        initTheme();
+
+        // 连接WebSocket
+        connectWebSocket();
+
+        // 检查系统状态
+        checkSystemStatus();
+
+        // 设置键盘快捷键
+        setupKeyboardShortcuts();
+
+        // 设置页面可见性检测
+        setupVisibilityChange();
+
+        // 加载配置和历史记录
+        refreshHistory();
+        updateDownloadStats();
+
+        console.log('页面初始化完成');
+      } catch (error) {
+        console.error('页面初始化失败:', error);
+        alert('页面初始化失败，请刷新页面重试');
+      }
+    });
+
+    // 设置页面可见性检测
+    function setupVisibilityChange() {
+      document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+          console.log('页面隐藏');
+        } else {
+          console.log('页面显示，检查WebSocket连接');
+          if (!isConnected) {
+            connectWebSocket();
+          }
+        }
+      });
+    }
+
+    // 全局错误处理
+    window.addEventListener('error', function(e) {
+      console.error('全局错误:', e.error);
+    });
+
+    window.addEventListener('unhandledrejection', function(e) {
+      console.error('未处理的Promise拒绝:', e.reason);
+      e.preventDefault(); // 防止错误显示在控制台
+    });
+  </script>
+</body>
+</html>

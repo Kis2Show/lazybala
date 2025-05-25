@@ -1,0 +1,202 @@
+# LazyBala .gitignore
+
+# ===== 编译产物 =====
+# Go 编译产物
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+lazybala
+lazybala.exe
+
+# ===== 二进制工具目录 =====
+# bin 目录下的所有二进制文件
+/bin/yt-dlp*
+/bin/ffmpeg*
+/bin/ffprobe*
+bin/
+!bin/.gitkeep
+
+# ===== 下载目录 =====
+# 音频书籍下载目录
+/audiobooks/
+audiobooks/
+!audiobooks/.gitkeep
+
+# ===== 配置和数据目录 =====
+# 配置文件目录
+/config/yt.config
+/config/config.json
+config/
+!config/.gitkeep
+
+# Cookies 目录和文件
+cookies.txt
+/cookies/
+cookies/
+!cookies/.gitkeep
+
+# ===== 测试相关文件 =====
+# 测试HTML文件
+test.html
+simple.html
+test_websocket.html
+status.html
+
+# 测试Go文件
+test.go
+simple_test.go
+url_parser_test.go
+*_test.go
+
+# 测试JSON文件
+test_api.json
+test_request.json
+
+# 测试脚本
+test_precheck.ps1
+start.bat
+start.sh
+
+# ===== 开发和部署文件 =====
+# Docker 相关
+docker-compose.yml
+Dockerfile
+
+# 部署文档
+DEPLOYMENT.md
+
+# Makefile
+Makefile
+
+# ===== 前端相关 =====
+# Node modules
+/frontend/node_modules
+
+# Build artifacts
+/frontend/dist
+
+# ===== IDE和编辑器文件 =====
+# IDE files
+.idea/
+.vscode/
+*.code-workspace
+
+# GoLand/IntelliJ
+*.iml
+*.ipr
+*.iws
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+
+# ===== 系统文件 =====
+# OS generated files
+.DS_Store
+Thumbs.db
+.AppleDouble
+.LSOverride
+Icon?
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.nfs*
+
+# ===== 媒体文件 =====
+# 忽略所有媒体文件
+*.mp4
+*.m4a
+*.mp3
+*.wav
+*.flac
+*.ogg
+*.webm
+*.mkv
+*.avi
+
+# 忽略图片文件
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.bmp
+*.svg
+*.ico
+
+# 忽略字幕文件
+*.srt
+*.vtt
+*.ass
+*.ssa
+
+# 忽略下载中的文件
+*.part
+
+# ===== 日志和临时文件 =====
+# 日志文件
+*.log
+logs/
+log/
+
+# 临时文件
+*.tmp
+*.temp
+temp/
+tmp/
+
+# 备份文件
+*.bak
+*.backup
+*.old
+
+# ===== Go 相关 =====
+# Go 模块缓存
+go.sum.backup
+
+# 测试覆盖率
+*.out
+coverage.html
+
+# 性能分析文件
+*.prof
+*.pprof
+
+# ===== 其他 =====
+# 环境变量文件
+.env
+.env.local
+.env.production
+
+# 压缩文件
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# ===== 保留的重要文件 =====
+# 确保这些文件不被忽略
+!README.md
+!LICENSE
+!go.mod
+!go.sum
+!*.go
+!index.html
+!.gitignore
+
+# 但是要忽略测试文件（覆盖上面的 !*.go 规则）
+test.go
+simple_test.go
+url_parser_test.go
+*_test.go
