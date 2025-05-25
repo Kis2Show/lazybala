@@ -12,10 +12,10 @@ lazybala.exe
 
 # ===== 二进制工具目录 =====
 # bin 目录下的所有二进制文件
-!/bin/yt-dlp*
+/bin/yt-dlp*
 /bin/ffmpeg*
 /bin/ffprobe*
-!bin/
+bin/
 !bin/.gitkeep
 
 # ===== 下载目录 =====
