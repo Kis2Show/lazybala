@@ -13,23 +13,96 @@
 [![GitHub stars](https://img.shields.io/github/stars/kis2show/lazybala.svg)](https://github.com/kis2show/lazybala/stargazers)
 [![GitHub license](https://img.shields.io/github/license/kis2show/lazybala.svg)](https://github.com/kis2show/lazybala/blob/main/LICENSE)
 
-[🚀 快速开始](#-快速开始) • [📦 安装方式](#-安装方式) • [🐳 Docker 部署](#-docker-部署) • [📖 文档](#-文档) • [🤝 贡献](#-贡献)
+[📸 项目展示](#-项目展示) • [🚀 快速开始](#-快速开始) • [📦 安装方式](#-安装方式) • [🐳 Docker 部署](#-docker-部署) • [📖 文档](#-文档) • [🤝 贡献](#-贡献)
 
 </div>
 
 ---
 
-## ✨ 特性
+## 📸 项目展示
 
-- 🎵 **音频下载**: 支持哔哩哔哩视频音频提取
-- 📱 **扫码登录**: 使用哔哩哔哩 APP 扫码登录获取 cookies
-- 📊 **实时进度**: WebSocket 实时显示下载进度和状态
-- 🔄 **断点续传**: 支持下载中断后恢复
-- 📁 **批量下载**: 支持合集和播放列表下载
-- ⚙️ **配置管理**: 持久化配置，支持自定义文件名格式
-- 🔄 **自动更新**: 自动检测并更新 yt-dlp 到最新版本
-- 🐳 **Docker 支持**: 提供多架构 Docker 镜像
-- 📱 **响应式设计**: 适配桌面和移动设备
+<div align="center">
+
+### 🏠 主界面
+*简洁直观的下载界面，支持链接输入和一键下载*
+
+![主界面](screenshots/screenshot_1.png)
+
+### 🔐 登录界面
+*扫码登录 Bilibili，安全便捷的身份验证*
+
+![登录界面](screenshots/screenshot_2.png)
+
+### 📊 下载进度
+*实时显示下载进度，支持暂停、恢复和停止操作*
+
+![下载进度](screenshots/screenshot_3.png)
+
+### 📝 下载历史
+*完整的下载记录管理，支持筛选和文件操作*
+
+![下载历史](screenshots/screenshot_4.png)
+
+### ⚙️ 设置界面
+*丰富的配置选项，支持主题切换和个性化设置*
+
+![设置界面](screenshots/screenshot_5.png)
+
+</div>
+
+---
+
+## ✨ 功能特性
+
+<div align="center">
+
+<table>
+<tr>
+<td width="50%">
+
+### 🎵 **媒体下载**
+- **Bilibili 音频下载** - 支持单个视频和播放列表
+- **高质量音频** - 自动选择最佳音质
+- **断点续传** - 支持暂停和恢复下载
+- **批量下载** - 支持播放列表批量下载
+
+</td>
+<td width="50%">
+
+### � **用户认证**
+- **QR 码登录** - 扫码快速登录 Bilibili
+- **Cookie 管理** - 自动保存和验证登录状态
+- **会话持久化** - 登录状态长期有效
+- **安全可靠** - 本地存储，保护隐私
+
+</td>
+</tr>
+<tr>
+<td width="50%">
+
+### � **现代化界面**
+- **响应式设计** - 支持桌面和移动设备
+- **实时进度** - WebSocket 实时显示下载进度
+- **暗色模式** - 支持明暗主题切换
+- **中文界面** - 完整的中文本地化
+
+</td>
+<td width="50%">
+
+### 🌍 **多平台支持**
+- **跨平台** - Linux、Windows、macOS、FreeBSD
+- **多架构** - x64、ARM64、ARMv7
+- **容器化** - Docker 和 Docker Compose 支持
+- **一键安装** - 自动安装脚本
+
+</td>
+</tr>
+</table>
+
+### � **管理功能**
+- **下载历史** - 完整的下载记录管理 • **进度监控** - 实时显示下载状态和速度 • **文件管理** - 自动组织下载的音频文件 • **配置管理** - 灵活的下载参数配置
+
+</div>
 
 ## 🚀 快速开始
 
@@ -37,7 +110,7 @@
 
 ```bash
 # 使用 docker-compose
-git clone https://github.com/your-username/lazybala.git
+git clone https://github.com/kis2show/lazybala.git
 cd lazybala
 docker-compose up -d
 
@@ -47,7 +120,7 @@ docker run -d \
   -p 8080:8080 \
   -v $(pwd)/audiobooks:/app/audiobooks \
   -v $(pwd)/config:/app/config \
-  ghcr.io/your-username/lazybala:latest
+  ghcr.io/kis2show/lazybala:latest
 ```
 
 ### 本地开发
@@ -62,7 +135,7 @@ docker run -d \
 
 1. **克隆仓库**
    ```bash
-   git clone https://github.com/your-username/lazybala.git
+   git clone https://github.com/kis2show/lazybala.git
    cd lazybala
    ```
 
@@ -241,7 +314,7 @@ docker build -t lazybala .
 
 如果你觉得这个项目有用，请给它一个 ⭐️！
 
-如有问题或建议，请提交 [Issue](https://github.com/your-username/lazybala/issues)。
+如有问题或建议，请提交 [Issue](https://github.com/kis2show/lazybala/issues)。
 
 ---
 

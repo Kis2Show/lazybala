@@ -57,10 +57,10 @@ git push origin v1.0.0
 
 同时会构建多平台 Docker 镜像：
 
-- `ghcr.io/your-username/lazybala:v1.0.0`
-- `ghcr.io/your-username/lazybala:1.0`
-- `ghcr.io/your-username/lazybala:1`
-- `ghcr.io/your-username/lazybala:latest`
+- `ghcr.io/kis2show/lazybala:v1.0.0`
+- `ghcr.io/kis2show/lazybala:1.0`
+- `ghcr.io/kis2show/lazybala:1`
+- `ghcr.io/kis2show/lazybala:latest`
 
 ## 🔐 安全特性
 
@@ -70,8 +70,8 @@ git push origin v1.0.0
 
 ```bash
 # 下载文件和校验和
-wget https://github.com/your-username/lazybala/releases/download/v1.0.0/lazybala-linux-amd64.tar.gz
-wget https://github.com/your-username/lazybala/releases/download/v1.0.0/lazybala-linux-amd64.tar.gz.sha256
+wget https://github.com/kis2show/lazybala/releases/download/v1.0.0/lazybala-linux-amd64.tar.gz
+wget https://github.com/kis2show/lazybala/releases/download/v1.0.0/lazybala-linux-amd64.tar.gz.sha256
 
 # 验证文件完整性
 sha256sum -c lazybala-linux-amd64.tar.gz.sha256

@@ -168,9 +168,9 @@ act push -e .github/workflows/test-events/release.json
 在 README.md 中添加构建状态徽章：
 
 ```markdown
-![CI/CD](https://github.com/your-username/lazybala/workflows/CI/CD%20Pipeline/badge.svg)
-![Docker](https://github.com/your-username/lazybala/workflows/Build%20and%20Push%20Docker%20Image/badge.svg)
-![Release](https://github.com/your-username/lazybala/workflows/Release/badge.svg)
+![CI/CD](https://github.com/kis2show/lazybala/workflows/CI/CD%20Pipeline/badge.svg)
+![Docker](https://github.com/kis2show/lazybala/workflows/Build%20and%20Push%20Docker%20Image/badge.svg)
+![Release](https://github.com/kis2show/lazybala/workflows/Release/badge.svg)
 ```
 
 ## 🚀 部署配置
