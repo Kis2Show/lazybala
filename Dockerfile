@@ -22,7 +22,7 @@ RUN go mod download -x
 
 # 复制源代码
 COPY *.go ./
-COPY index.html ./
+COPY *.html ./
 
 # 构建参数
 ARG BUILDTIME
@@ -59,7 +59,7 @@ RUN mkdir -p /app/bin /app/config /app/cookies /app/audiobooks
 COPY --from=backend-builder /app/lazybala .
 
 # 复制 HTML 文件
-COPY --from=backend-builder /app/index.html .
+COPY --from=backend-builder /app/*.html ./
 
 # 下载最新的 yt-dlp
 RUN wget -O /app/bin/yt-dlp https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_linux && \
