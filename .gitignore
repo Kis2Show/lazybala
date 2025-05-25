@@ -200,3 +200,9 @@ test.go
 simple_test.go
 url_parser_test.go
 *_test.go
+
+# 保留 screenshots 目录中的图片文件
+!screenshots/
+!screenshots/*.png
+!screenshots/*.jpg
+!screenshots/*.jpeg
