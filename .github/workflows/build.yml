@@ -116,28 +116,29 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Create Release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: softprops/action-gh-release@v1
       with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
+        tag_name: ${{ github.ref_name }}
+        name: LazyBala ${{ github.ref_name }}
+        generate_release_notes: true
         body: |
-          ## LazyBala ${{ github.ref }}
+          ## 🎉 LazyBala ${{ github.ref_name }}
 
-          ### 新功能
-          - 哔哩哔哩音频下载
-          - 扫码登录支持
-          - 实时下载进度
-          - 断点续传
-          - 自动版本更新
+          LazyBala 是一个基于 Go 和纯 JavaScript 的媒体下载应用，支持 Bilibili 等平台的音频下载。
 
-          ### Docker 镜像
+          ### ✨ 主要特性
+          - 🎵 哔哩哔哩音频下载
+          - 🔐 扫码登录支持
+          - 📊 实时下载进度
+          - 🔄 断点续传
+          - 🔄 自动版本更新
+
+          ### 🐳 Docker 镜像
           ```bash
           docker pull ghcr.io/${{ github.repository }}:${{ github.ref_name }}
           ```
 
-          ### 使用方法
+          ### 🚀 使用方法
           ```bash
           docker run -d \
             --name lazybala \
@@ -146,5 +147,9 @@ jobs:
             -v $(pwd)/config:/app/config \
             ghcr.io/${{ github.repository }}:${{ github.ref_name }}
           ```
+
+          ### 📖 更多信息
+          - [使用说明](https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/README.md)
+          - [Docker 部署](https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/DOCKER.md)
         draft: false
         prerelease: false
