@@ -304,7 +304,7 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Log in to Docker Hub
-      if: ${{ secrets.DOCKERHUB_USERNAME != '' && secrets.DOCKERHUB_TOKEN != '' }}
+      if: ${{ vars.ENABLE_DOCKERHUB == 'true' }}
       uses: docker/login-action@v3
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -316,7 +316,7 @@ jobs:
       with:
         images: |
           ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          ${{ secrets.DOCKERHUB_USERNAME != '' && format('{0}/lazybala', secrets.DOCKERHUB_USERNAME) || '' }}
+          ${{ vars.ENABLE_DOCKERHUB == 'true' && 'kis2show/lazybala' || '' }}
         tags: |
           type=semver,pattern={{version}}
           type=semver,pattern={{major}}.{{minor}}
@@ -339,7 +339,7 @@ jobs:
           VERSION=${{ needs.create-release.outputs.tag_name }}
 
     - name: Generate artifact attestation
-      if: github.repository_owner == 'Kis2Show'
+      if: github.repository_owner == 'Kis2Show' && steps.build.outputs.digest != ''
       continue-on-error: true  # 允许 attestation 失败而不中断工作流
       uses: actions/attest-build-provenance@v1
       with:
@@ -348,10 +348,10 @@ jobs:
         push-to-registry: true
 
     - name: Update Docker Hub description
-      if: ${{ secrets.DOCKERHUB_USERNAME != '' && secrets.DOCKERHUB_TOKEN != '' }}
+      if: ${{ vars.ENABLE_DOCKERHUB == 'true' }}
       uses: peter-evans/dockerhub-description@v3
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
-        repository: ${{ secrets.DOCKERHUB_USERNAME }}/lazybala
+        repository: kis2show/lazybala
         readme-filepath: ./DOCKER.md

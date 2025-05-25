@@ -107,7 +107,7 @@ jobs:
         echo "image=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}" >> $GITHUB_OUTPUT
 
     - name: Generate artifact attestation
-      if: github.event_name != 'pull_request' && github.repository_owner == 'Kis2Show'
+      if: github.event_name != 'pull_request' && github.repository_owner == 'Kis2Show' && steps.build.outputs.digest != ''
       continue-on-error: true  # 允许 attestation 失败而不中断工作流
       uses: actions/attest-build-provenance@v1
       with:
@@ -132,8 +132,8 @@ jobs:
         output: 'trivy-results.sarif'
 
     - name: Upload Trivy scan results to GitHub Security tab
-      uses: github/codeql-action/upload-sarif@v2
-      if: always()
+      uses: github/codeql-action/upload-sarif@v3
+      if: always() && hashFiles('trivy-results.sarif') != ''
       with:
         sarif_file: 'trivy-results.sarif'
 

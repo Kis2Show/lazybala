@@ -72,7 +72,7 @@ jobs:
           VERSION=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
 
     - name: Generate artifact attestation
-      if: github.event_name != 'pull_request' && github.repository_owner == 'Kis2Show'
+      if: github.event_name != 'pull_request' && github.repository_owner == 'Kis2Show' && steps.build.outputs.digest != ''
       continue-on-error: true  # 允许 attestation 失败而不中断工作流
       uses: actions/attest-build-provenance@v1
       with:

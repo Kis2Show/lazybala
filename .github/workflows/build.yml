@@ -46,39 +46,52 @@ jobs:
     - name: Download yt-dlp binaries
       run: |
         mkdir -p bin
-        
+
         # 获取最新版本
         LATEST_VERSION=$(curl -s https://api.github.com/repos/yt-dlp/yt-dlp/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
         echo "Latest yt-dlp version: $LATEST_VERSION"
-        
+
         # 下载 amd64 版本
         curl -L "https://github.com/yt-dlp/yt-dlp/releases/download/$LATEST_VERSION/yt-dlp_linux" -o bin/yt-dlp_linux
-        
+
         # 下载 arm64 版本
         curl -L "https://github.com/yt-dlp/yt-dlp/releases/download/$LATEST_VERSION/yt-dlp_linux_aarch64" -o bin/yt-dlp_linux_aarch64
-        
+
         # 设置执行权限
         chmod +x bin/yt-dlp_*
 
     - name: Download ffmpeg binaries
+      continue-on-error: true  # 允许 ffmpeg 下载失败
       run: |
-        # 下载 amd64 ffmpeg
-        curl -L "https://johnvansickle.com/ffmpeg/builds/ffmpeg-git-amd64-static.tar.xz" -o ffmpeg-amd64.tar.xz
-        tar -xf ffmpeg-amd64.tar.xz
-        mv ffmpeg-git-*-amd64-static/ffmpeg bin/ffmpeg_linux
-        mv ffmpeg-git-*-amd64-static/ffprobe bin/ffprobe_linux
-        
-        # 下载 arm64 ffmpeg
-        curl -L "https://johnvansickle.com/ffmpeg/builds/ffmpeg-git-arm64-static.tar.xz" -o ffmpeg-arm64.tar.xz
-        tar -xf ffmpeg-arm64.tar.xz
-        mv ffmpeg-git-*-arm64-static/ffmpeg bin/ffmpeg_linux_aarch64
-        mv ffmpeg-git-*-arm64-static/ffprobe bin/ffprobe_linux_aarch64
-        
+        echo "Downloading ffmpeg binaries..."
+
+        # 尝试下载 amd64 ffmpeg
+        if curl -L --connect-timeout 30 --max-time 300 "https://johnvansickle.com/ffmpeg/builds/ffmpeg-git-amd64-static.tar.xz" -o ffmpeg-amd64.tar.xz; then
+          tar -xf ffmpeg-amd64.tar.xz
+          mv ffmpeg-git-*-amd64-static/ffmpeg bin/ffmpeg_linux 2>/dev/null || echo "Failed to extract amd64 ffmpeg"
+          mv ffmpeg-git-*-amd64-static/ffprobe bin/ffprobe_linux 2>/dev/null || echo "Failed to extract amd64 ffprobe"
+        else
+          echo "Failed to download amd64 ffmpeg, skipping..."
+        fi
+
+        # 尝试下载 arm64 ffmpeg
+        if curl -L --connect-timeout 30 --max-time 300 "https://johnvansickle.com/ffmpeg/builds/ffmpeg-git-arm64-static.tar.xz" -o ffmpeg-arm64.tar.xz; then
+          tar -xf ffmpeg-arm64.tar.xz
+          mv ffmpeg-git-*-arm64-static/ffmpeg bin/ffmpeg_linux_aarch64 2>/dev/null || echo "Failed to extract arm64 ffmpeg"
+          mv ffmpeg-git-*-arm64-static/ffprobe bin/ffprobe_linux_aarch64 2>/dev/null || echo "Failed to extract arm64 ffprobe"
+        else
+          echo "Failed to download arm64 ffmpeg, skipping..."
+        fi
+
         # 设置执行权限
-        chmod +x bin/ffmpeg_* bin/ffprobe_*
-        
+        chmod +x bin/ffmpeg_* bin/ffprobe_* 2>/dev/null || echo "Some ffmpeg binaries not found"
+
         # 清理临时文件
-        rm -rf ffmpeg-*.tar.xz ffmpeg-git-*
+        rm -rf ffmpeg-*.tar.xz ffmpeg-git-* 2>/dev/null || true
+
+        # 检查下载结果
+        echo "Available binaries:"
+        ls -la bin/ || echo "No binaries directory found"
 
     - name: Build and push Docker image
       uses: docker/build-push-action@v5
@@ -111,19 +124,19 @@ jobs:
         release_name: Release ${{ github.ref }}
         body: |
           ## LazyBala ${{ github.ref }}
-          
+
           ### 新功能
           - 哔哩哔哩音频下载
           - 扫码登录支持
           - 实时下载进度
           - 断点续传
           - 自动版本更新
-          
+
           ### Docker 镜像
           ```bash
           docker pull ghcr.io/${{ github.repository }}:${{ github.ref_name }}
           ```
-          
+
           ### 使用方法
           ```bash
           docker run -d \
