@@ -27,6 +27,8 @@ jobs:
     permissions:
       contents: read
       packages: write
+      attestations: write
+      id-token: write
 
     steps:
     - name: Checkout repository
@@ -70,6 +72,8 @@ jobs:
           VERSION=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
 
     - name: Generate artifact attestation
+      if: github.event_name != 'pull_request' && github.repository_owner == 'Kis2Show'
+      continue-on-error: true  # 允许 attestation 失败而不中断工作流
       uses: actions/attest-build-provenance@v1
       with:
         subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
