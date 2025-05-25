@@ -1,0 +1,7 @@
+{
+  "save_path": "",
+  "title_regex": "%(title)s.%(ext)s",
+  "quality": "bestaudio/best",
+  "retry_count": 5,
+  "write_thumbnail": true
+}

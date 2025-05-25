@@ -12,10 +12,10 @@ lazybala.exe
 
 # ===== 二进制工具目录 =====
 # bin 目录下的所有二进制文件
-/bin/yt-dlp*
-/bin/ffmpeg*
-/bin/ffprobe*
-bin/
+!/bin/yt-dlp*
+!/bin/ffmpeg*
+!/bin/ffprobe*
+!bin/
 !bin/.gitkeep
 
 # ===== 下载目录 =====
@@ -26,15 +26,15 @@ audiobooks/
 
 # ===== 配置和数据目录 =====
 # 配置文件目录
-/config/yt.config
-/config/config.json
-config/
+!/config/yt.config
+!/config/config.json
+!config/
 !config/.gitkeep
 
 # Cookies 目录和文件
 cookies.txt
-/cookies/
-cookies/
+!/cookies/
+!cookies/
 !cookies/.gitkeep
 
 # ===== 测试相关文件 =====
