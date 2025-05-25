@@ -2,8 +2,6 @@
 
 <div align="center">
 
-![LazyBala Logo](https://via.placeholder.com/200x200/FF6B35/FFFFFF?text=🦫)
-
 **基于 Go 和纯 JavaScript 的媒体下载应用**
 
 支持 Bilibili 等平台的音频下载，具有现代化的 Web 界面和完整的自动化部署流程
