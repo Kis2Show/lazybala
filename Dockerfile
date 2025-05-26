@@ -15,10 +15,8 @@ ENV GOPROXY=https://proxy.golang.org,direct
 ENV GOSUMDB=sum.golang.org
 ENV GO111MODULE=on
 
-# 验证 Go 版本和模块文件
-RUN go version
-RUN cat go.mod
-RUN go mod download -x
+# 下载依赖
+RUN go mod download
 
 # 复制源代码
 COPY *.go ./
@@ -27,9 +25,11 @@ COPY *.html ./
 # 构建参数
 ARG BUILDTIME
 ARG VERSION
+ARG TARGETARCH
+ARG TARGETOS
 
-# 构建应用
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
+# 构建应用（支持多架构）
+RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build \
     -ldflags="-w -s -extldflags '-static' -X main.version=${VERSION} -X main.buildTime=${BUILDTIME}" \
     -a -installsuffix cgo \
     -o lazybala .
@@ -61,23 +61,27 @@ COPY --from=backend-builder /app/lazybala .
 # 复制 HTML 文件
 COPY --from=backend-builder /app/*.html ./
 
-# 下载最新的 yt-dlp
-RUN wget -O /app/bin/yt-dlp https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_linux && \
+# 下载最新的 yt-dlp（支持多架构）
+ARG TARGETARCH
+RUN case "${TARGETARCH}" in \
+        "amd64") YT_DLP_ARCH="x86_64" ;; \
+        "arm64") YT_DLP_ARCH="aarch64" ;; \
+        *) YT_DLP_ARCH="x86_64" ;; \
+    esac && \
+    wget -O /app/bin/yt-dlp "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_linux_${YT_DLP_ARCH}" && \
     chmod +x /app/bin/yt-dlp
 
-# 或者复制预下载的二进制工具（如果存在）
-# ARG TARGETARCH
-# COPY bin/yt-dlp_linux${TARGETARCH:+_$TARGETARCH} /app/bin/yt-dlp_linux
-# COPY bin/ffmpeg_linux${TARGETARCH:+_$TARGETARCH} /app/bin/ffmpeg_linux
-# COPY bin/ffprobe_linux${TARGETARCH:+_$TARGETARCH} /app/bin/ffprobe_linux
-# RUN chmod +x /app/bin/*
+# 验证 yt-dlp 安装
+RUN /app/bin/yt-dlp --version || echo "yt-dlp installation verification failed"
 
 # 创建非 root 用户
 RUN addgroup -g 1001 -S lazybala && \
     adduser -S lazybala -u 1001 -G lazybala
 
-# 更改目录所有权
-RUN chown -R lazybala:lazybala /app
+# 更改目录所有权和权限
+RUN chown -R lazybala:lazybala /app && \
+    chmod -R 755 /app && \
+    chmod -R 777 /app/audiobooks /app/config /app/cookies
 
 # 切换到非 root 用户
 USER lazybala
@@ -90,11 +94,18 @@ ENV PORT=8080
 ENV GIN_MODE=release
 
 # 健康检查
-HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:8080/ || exit 1
 
 # 数据卷
 VOLUME ["/app/audiobooks", "/app/config", "/app/cookies"]
+
+# 添加标签
+LABEL org.opencontainers.image.title="LazyBala" \
+      org.opencontainers.image.description="A web-based media downloader with bilibili support" \
+      org.opencontainers.image.vendor="Kis2Show" \
+      org.opencontainers.image.licenses="MIT" \
+      org.opencontainers.image.source="https://github.com/kis2show/lazybala"
 
 # 启动命令
 CMD ["./lazybala"]

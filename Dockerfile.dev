@@ -1,0 +1,53 @@
+# LazyBala 开发环境 Dockerfile
+FROM golang:1.23-alpine
+
+# 安装开发依赖
+RUN apk add --no-cache \
+    git \
+    ca-certificates \
+    tzdata \
+    wget \
+    curl \
+    python3 \
+    py3-pip \
+    ffmpeg \
+    bash \
+    make \
+    gcc \
+    musl-dev
+
+# 设置时区
+ENV TZ=Asia/Shanghai
+
+# 安装 Air（热重载工具）
+RUN go install github.com/cosmtrek/air@latest
+
+WORKDIR /app
+
+# 复制 Go 模块文件
+COPY go.mod go.sum ./
+
+# 设置 Go 代理和环境变量
+ENV GOPROXY=https://proxy.golang.org,direct
+ENV GOSUMDB=sum.golang.org
+ENV GO111MODULE=on
+
+# 下载依赖
+RUN go mod download
+
+# 创建必要的目录
+RUN mkdir -p /app/bin /app/config /app/cookies /app/audiobooks
+
+# 下载最新的 yt-dlp
+RUN wget -O /app/bin/yt-dlp https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_linux && \
+    chmod +x /app/bin/yt-dlp
+
+# 暴露端口
+EXPOSE 8080
+
+# 设置环境变量
+ENV PORT=8080
+ENV GIN_MODE=debug
+
+# 开发模式启动命令（使用 Air 热重载）
+CMD ["air", "-c", ".air.toml"]

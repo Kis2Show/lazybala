@@ -53,10 +53,16 @@ start.sh
 # Docker 相关
 docker-compose.yml
 Dockerfile.dev
+.air.toml
+
+# 构建脚本
+docker-build.bat
+docker-build.ps1
 
 # 部署文档
 DEPLOYMENT.md
 README.md
+DOCKER.md
 
 # Makefile
 Makefile

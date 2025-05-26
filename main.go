@@ -125,8 +125,13 @@ func main() {
 func createDirectories() {
 	dirs := []string{"audiobooks", "config", "cookies"}
 	for _, dir := range dirs {
-		if err := os.MkdirAll(dir, 0755); err != nil {
+		if err := os.MkdirAll(dir, 0777); err != nil {
 			log.Printf("创建目录 %s 失败: %v", dir, err)
+		} else {
+			// 确保目录权限正确
+			if err := os.Chmod(dir, 0777); err != nil {
+				log.Printf("设置目录 %s 权限失败: %v", dir, err)
+			}
 		}
 	}
 }

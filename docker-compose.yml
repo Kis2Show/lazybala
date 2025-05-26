@@ -1,10 +1,14 @@
 version: '3.8'
 
 services:
+  # 生产环境服务
   lazybala:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        BUILDTIME: ${BUILDTIME:-$(date -u +"%Y-%m-%dT%H:%M:%SZ")}
+        VERSION: ${VERSION:-latest}
     image: lazybala:latest
     container_name: lazybala
     restart: unless-stopped
@@ -26,7 +30,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 10s
+      start_period: 30s
     networks:
       - lazybala-network
     labels:
@@ -35,6 +39,32 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.lazybala.rule=Host(`lazybala.local`)"
       - "traefik.http.services.lazybala.loadbalancer.server.port=8080"
+
+  # 开发环境服务
+  lazybala-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    image: lazybala:dev
+    container_name: lazybala-dev
+    ports:
+      - "8081:8080"
+    volumes:
+      # 源代码挂载（热重载）
+      - .:/app
+      - /app/tmp
+      # 数据持久化目录
+      - ./data/audiobooks:/app/audiobooks
+      - ./data/config:/app/config
+      - ./data/cookies:/app/cookies
+    environment:
+      - PORT=8080
+      - GIN_MODE=debug
+      - TZ=Asia/Shanghai
+    networks:
+      - lazybala-network
+    profiles:
+      - dev
 
 networks:
   lazybala-network:

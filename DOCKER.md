@@ -23,28 +23,67 @@ docker-compose logs -f
 open http://localhost:8080
 ```
 
-### 方法二：使用构建脚本
-
-#### Linux/macOS
-```bash
-# 给脚本执行权限
-chmod +x build.sh
-
-# 构建并测试
-./build.sh latest
-```
-
-#### Windows (PowerShell)
-```powershell
-# 执行构建脚本
-.\build.ps1 -Version latest
-```
-
-### 方法三：手动构建
+### 方法二：使用 Makefile（推荐）
 
 ```bash
-# 构建镜像
+# 查看所有可用命令
+make help
+
+# 构建本地二进制文件
+make build
+
+# 构建 Docker 镜像
+make docker
+
+# 启动开发环境
+make dev-docker
+
+# 构建多架构镜像并推送
+make build-multi
+
+# 推送到 Docker Hub
+make push
+
+# 运行测试
+make test
+
+# 清理资源
+make clean
+```
+
+### 方法三：使用预构建镜像
+
+```bash
+# 从 GitHub Container Registry 拉取
+docker pull ghcr.io/kis2show/lazybala:latest
+
+# 从 Docker Hub 拉取
+docker pull kis2show/lazybala:latest
+
+# 运行容器
+docker run -d \
+  --name lazybala \
+  -p 8080:8080 \
+  -v ./data/audiobooks:/app/audiobooks \
+  -v ./data/config:/app/config \
+  -v ./data/cookies:/app/cookies \
+  kis2show/lazybala:latest
+```
+
+### 方法四：手动构建
+
+```bash
+# 构建单架构镜像
 docker build -t lazybala:latest .
+
+# 构建多架构镜像
+docker buildx build \
+  --platform linux/amd64,linux/arm64 \
+  --build-arg VERSION=v1.0.0 \
+  --build-arg BUILDTIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ") \
+  -t lazybala:latest \
+  --push \
+  .
 
 # 运行容器
 docker run -d \
@@ -54,6 +93,34 @@ docker run -d \
   -v ./data/config:/app/config \
   -v ./data/cookies:/app/cookies \
   lazybala:latest
+```
+
+## 🏗️ 开发环境
+
+### 使用开发容器
+
+```bash
+# 启动开发环境（支持热重载）
+docker-compose --profile dev up --build lazybala-dev
+
+# 访问开发环境
+# http://localhost:8081
+
+# 查看开发环境日志
+make logs-dev
+```
+
+### 本地开发
+
+```bash
+# 安装依赖
+make deps
+
+# 启动开发模式
+make dev
+
+# 或直接运行
+go run .
 ```
 
 ## 📁 目录结构
@@ -142,7 +209,7 @@ volumes:
 server {
     listen 80;
     server_name lazybala.example.com;
-    
+
     location / {
         proxy_pass http://localhost:8080;
         proxy_set_header Host $host;
@@ -213,7 +280,7 @@ docker volume prune -f
    ```bash
    # 查看容器日志
    docker-compose logs lazybala
-   
+
    # 检查端口占用
    netstat -tlnp | grep 8080
    ```
@@ -222,7 +289,7 @@ docker volume prune -f
    ```bash
    # 检查 yt-dlp 是否正常
    docker exec lazybala /app/bin/yt-dlp --version
-   
+
    # 检查网络连接
    docker exec lazybala ping -c 3 www.bilibili.com
    ```
@@ -231,7 +298,7 @@ docker volume prune -f
    ```bash
    # 检查目录权限
    ls -la data/
-   
+
    # 修复权限
    sudo chown -R 1001:1001 data/
    ```
