@@ -19,8 +19,8 @@ services:
       - ./data/audiobooks:/app/audiobooks
       - ./data/config:/app/config
       - ./data/cookies:/app/cookies
-      # 可选：如果有预下载的二进制工具
-      # - ./bin:/app/bin:ro
+      # 二进制工具目录（可手动升级 yt-dlp）
+      - ./data/bin:/app/bin
     environment:
       - PORT=8080
       - GIN_MODE=release
@@ -57,6 +57,8 @@ services:
       - ./data/audiobooks:/app/audiobooks
       - ./data/config:/app/config
       - ./data/cookies:/app/cookies
+      # 二进制工具目录（开发环境）
+      - ./data/bin:/app/bin
     environment:
       - PORT=8080
       - GIN_MODE=debug
@@ -76,4 +78,6 @@ volumes:
   config:
     driver: local
   cookies:
+    driver: local
+  bin:
     driver: local

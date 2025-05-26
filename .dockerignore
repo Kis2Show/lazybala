@@ -59,6 +59,9 @@ Dockerfile.dev
 docker-build.bat
 docker-build.ps1
 
+# 升级脚本
+scripts/
+
 # 部署文档
 DEPLOYMENT.md
 README.md

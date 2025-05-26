@@ -156,6 +156,7 @@ lazybala/
 | `/app/audiobooks` | `./data/audiobooks` | 下载的音频文件存储 |
 | `/app/config` | `./data/config` | 应用配置文件 |
 | `/app/cookies` | `./data/cookies` | 认证 cookies 存储 |
+| `/app/bin` | `./data/bin` | 二进制工具目录（yt-dlp 等） |
 
 ### 端口映射
 
@@ -181,6 +182,7 @@ services:
       - ./data/audiobooks:/app/audiobooks
       - ./data/config:/app/config
       - ./data/cookies:/app/cookies
+      - ./data/bin:/app/bin
     environment:
       - PORT=8080
       - GIN_MODE=release
@@ -193,14 +195,26 @@ networks:
     driver: bridge
 ```
 
-### 使用外部二进制工具
+### yt-dlp 升级管理
 
-如果您有预下载的 yt-dlp 和 ffmpeg 二进制文件：
+LazyBala 支持将 yt-dlp 作为可挂载卷，方便手动升级：
 
 ```yaml
 volumes:
-  - ./bin:/app/bin:ro  # 只读挂载二进制工具
+  - ./data/bin:/app/bin  # 二进制工具目录
 ```
+
+#### 自动升级脚本
+
+```bash
+# Linux/macOS
+./scripts/update-ytdlp.sh
+
+# Windows
+.\scripts\update-ytdlp.ps1
+```
+
+详细说明请参考：[yt-dlp 升级指南](docs/YTDLP_UPGRADE.md)
 
 ### 反向代理配置
 

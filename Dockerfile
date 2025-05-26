@@ -83,7 +83,7 @@ RUN addgroup -g 1001 -S lazybala && \
 # 更改目录所有权和权限
 RUN chown -R lazybala:lazybala /app && \
     chmod -R 755 /app && \
-    chmod -R 777 /app/audiobooks /app/config /app/cookies
+    chmod -R 777 /app/audiobooks /app/config /app/cookies /app/bin
 
 # 切换到非 root 用户
 USER lazybala
@@ -100,7 +100,7 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:8080/ || exit 1
 
 # 数据卷
-VOLUME ["/app/audiobooks", "/app/config", "/app/cookies"]
+VOLUME ["/app/audiobooks", "/app/config", "/app/cookies", "/app/bin"]
 
 # 添加标签
 LABEL org.opencontainers.image.title="LazyBala" \
