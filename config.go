@@ -159,7 +159,7 @@ func checkLatestVersion() (string, string, error) {
 
 // 获取当前 yt-dlp 版本
 func getCurrentYtDlpVersion() (string, error) {
-	ytDlpPath := getBinaryPath("yt-dlp")
+	ytDlpPath := getYtDlpPath()
 
 	if _, err := os.Stat(ytDlpPath); os.IsNotExist(err) {
 		return "未安装", nil
@@ -208,7 +208,7 @@ func updateYtDlp() error {
 	}
 
 	// 替换原文件
-	ytDlpPath := getBinaryPath("yt-dlp")
+	ytDlpPath := getYtDlpPath()
 	if err := os.Rename(tempPath, ytDlpPath); err != nil {
 		return fmt.Errorf("替换文件失败: %v", err)
 	}

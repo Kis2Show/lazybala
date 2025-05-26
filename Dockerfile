@@ -61,6 +61,10 @@ COPY --from=backend-builder /app/lazybala .
 # 复制 HTML 文件
 COPY --from=backend-builder /app/*.html ./
 
+# 复制权限修复脚本
+COPY scripts/fix-permissions.sh /usr/local/bin/fix-permissions.sh
+RUN chmod +x /usr/local/bin/fix-permissions.sh
+
 # 下载最新的 yt-dlp（支持多架构）
 ARG TARGETARCH
 RUN case "${TARGETARCH}" in \
@@ -111,5 +115,6 @@ LABEL org.opencontainers.image.title="LazyBala" \
       org.opencontainers.image.licenses="MIT" \
       org.opencontainers.image.source="https://github.com/kis2show/lazybala"
 
-# 启动命令
+# 启动命令（使用权限修复脚本）
+ENTRYPOINT ["/usr/local/bin/fix-permissions.sh"]
 CMD ["./lazybala"]

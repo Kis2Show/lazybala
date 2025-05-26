@@ -73,6 +73,15 @@ type DownloadProgress struct {
 
 // 获取yt-dlp可执行文件路径
 func getYtDlpPath() string {
+	// 在 Docker 容器中，统一使用 /app/bin/yt-dlp
+	// 在宿主机上，根据操作系统选择对应的文件名
+
+	// 检查是否在容器环境中
+	if isInContainer() {
+		return filepath.Join("bin", "yt-dlp")
+	}
+
+	// 宿主机环境，根据操作系统选择文件名
 	var filename string
 	switch runtime.GOOS {
 	case "windows":
@@ -85,6 +94,58 @@ func getYtDlpPath() string {
 		filename = "yt-dlp"
 	}
 	return filepath.Join("bin", filename)
+}
+
+// 检查是否在容器环境中
+func isInContainer() bool {
+	// 检查常见的容器环境标识
+	if _, err := os.Stat("/.dockerenv"); err == nil {
+		return true
+	}
+
+	// 检查 cgroup 信息
+	if data, err := os.ReadFile("/proc/1/cgroup"); err == nil {
+		content := string(data)
+		if strings.Contains(content, "docker") || strings.Contains(content, "containerd") {
+			return true
+		}
+	}
+
+	// 检查环境变量
+	if os.Getenv("CONTAINER") != "" || os.Getenv("DOCKER_CONTAINER") != "" {
+		return true
+	}
+
+	return false
+}
+
+// 检查并修复 yt-dlp 权限
+func ensureYtDlpExecutable() error {
+	ytDlpPath := getYtDlpPath()
+
+	// 检查文件是否存在
+	if _, err := os.Stat(ytDlpPath); os.IsNotExist(err) {
+		return fmt.Errorf("yt-dlp 文件不存在: %s", ytDlpPath)
+	}
+
+	// 检查文件权限
+	fileInfo, err := os.Stat(ytDlpPath)
+	if err != nil {
+		return fmt.Errorf("无法获取文件信息: %v", err)
+	}
+
+	// 检查是否有执行权限
+	mode := fileInfo.Mode()
+	if mode&0111 == 0 {
+		// 没有执行权限，尝试添加
+		fmt.Printf("yt-dlp 文件缺少执行权限，正在修复: %s\n", ytDlpPath)
+		if err := os.Chmod(ytDlpPath, 0755); err != nil {
+			return fmt.Errorf("设置执行权限失败: %v", err)
+		}
+		fmt.Printf("已设置 yt-dlp 执行权限: %s\n", ytDlpPath)
+	}
+
+	return nil
 }
 
 // isAudioFile 检查文件是否为音频文件
@@ -238,6 +299,11 @@ func startDownload(task *DownloadTask) error {
 		// 广播更新状态
 		broadcastProgress()
 		fmt.Printf("预加载了 %d 个已存在的音频文件到完成列表\n", len(currentDownload.Progress.CompletedFiles))
+	}
+
+	// 确保 yt-dlp 有执行权限
+	if err := ensureYtDlpExecutable(); err != nil {
+		return fmt.Errorf("yt-dlp 权限检查失败: %v", err)
 	}
 
 	// 构建yt-dlp命令

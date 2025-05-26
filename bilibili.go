@@ -347,7 +347,12 @@ func readCookies() (string, error) {
 
 // 获取视频信息
 func getVideoInfo(url string) (*PreCheckResponse, error) {
-	ytDlpPath := getBinaryPath("yt-dlp")
+	// 确保 yt-dlp 有执行权限
+	if err := ensureYtDlpExecutable(); err != nil {
+		return nil, fmt.Errorf("yt-dlp 权限检查失败: %v", err)
+	}
+
+	ytDlpPath := getYtDlpPath()
 
 	// 首先获取播放列表基本信息
 	args := []string{
@@ -436,7 +441,12 @@ func getVideoInfo(url string) (*PreCheckResponse, error) {
 
 // 获取单个视频详细信息
 func getSingleVideoInfo(url string) (*PreCheckResponse, error) {
-	ytDlpPath := getBinaryPath("yt-dlp")
+	// 确保 yt-dlp 有执行权限
+	if err := ensureYtDlpExecutable(); err != nil {
+		return nil, fmt.Errorf("yt-dlp 权限检查失败: %v", err)
+	}
+
+	ytDlpPath := getYtDlpPath()
 
 	args := []string{
 		"--dump-json",

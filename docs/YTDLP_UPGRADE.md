@@ -148,10 +148,28 @@ docker exec lazybala /app/bin/yt-dlp --version
 ## 🔍 故障排除
 
 ### 权限问题
+
+#### 容器内权限问题
+```bash
+# 检查容器内 yt-dlp 权限
+docker exec lazybala ls -la /app/bin/yt-dlp
+
+# 手动修复容器内权限
+docker exec lazybala chmod +x /app/bin/yt-dlp
+
+# 重启容器（会自动修复权限）
+docker-compose restart lazybala
+```
+
+#### 宿主机权限问题
 ```bash
 # 确保 bin 目录有正确权限
 chmod 755 data/bin/
 chmod +x data/bin/yt-dlp
+
+# 群晖系统权限修复
+sudo chown -R 100:100 /volume1/docker/lazybala/bin/
+sudo chmod +x /volume1/docker/lazybala/bin/yt-dlp
 ```
 
 ### 下载失败

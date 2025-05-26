@@ -18,6 +18,11 @@ var (
 func init() {
 	// 创建必要的目录
 	createDirectories()
+
+	// 检查并修复 yt-dlp 权限
+	if err := ensureYtDlpExecutable(); err != nil {
+		log.Printf("yt-dlp 权限检查失败: %v", err)
+	}
 }
 
 func main() {
