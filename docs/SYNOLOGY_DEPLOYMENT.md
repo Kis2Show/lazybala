@@ -29,6 +29,7 @@ docker-compose -f docker-compose.synology.yml up -d
 # 在群晖 SSH 中执行
 sudo mkdir -p /volume1/docker/lazybala/{audiobooks,config,cookies,bin}
 sudo chmod -R 777 /volume1/docker/lazybala/
+sudo chown -R 100:100 /volume1/docker/lazybala/
 ```
 
 ## 🚀 快速部署
@@ -67,6 +68,11 @@ chmod +x scripts/deploy-synology.sh
 # 创建数据目录
 sudo mkdir -p /volume1/docker/lazybala/{audiobooks,config,cookies,bin}
 sudo chmod -R 777 /volume1/docker/lazybala/
+sudo chown -R 100:100 /volume1/docker/lazybala/
+
+# 设置环境变量
+export PUID=100
+export PGID=100
 
 # 部署应用
 docker-compose -f docker-compose.synology.yml up -d --build
@@ -88,6 +94,8 @@ docker-compose -f docker-compose.synology.yml up -d --build
      - `PORT=8080`
      - `GIN_MODE=release`
      - `TZ=Asia/Shanghai`
+     - `PUID=100`
+     - `PGID=100`
 
 ## 📁 目录结构
 
@@ -108,10 +116,10 @@ docker-compose -f docker-compose.synology.yml up -d --build
 # docker-compose.synology.yml
 services:
   lazybala:
-    user: "0:0"  # 使用 root 用户
+    user: "100:100"  # 使用群晖 users 组
     environment:
-      - PUID=0
-      - PGID=0
+      - PUID=100
+      - PGID=100
     volumes:
       - /volume1/docker/lazybala/audiobooks:/app/audiobooks
       - /volume1/docker/lazybala/config:/app/config
@@ -136,8 +144,9 @@ deploy:
 
 ### 1. 权限被拒绝
 ```bash
-# 解决方案：设置正确权限
+# 解决方案：设置正确权限和所有权
 sudo chmod -R 777 /volume1/docker/lazybala/
+sudo chown -R 100:100 /volume1/docker/lazybala/
 ```
 
 ### 2. 容器无法启动

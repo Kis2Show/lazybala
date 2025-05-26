@@ -76,12 +76,14 @@ RUN case "${TARGETARCH}" in \
 # 验证 yt-dlp 安装
 RUN /app/bin/yt-dlp --version || echo "yt-dlp installation verification failed"
 
-# 创建非 root 用户
-RUN addgroup -g 1001 -S lazybala && \
-    adduser -S lazybala -u 1001 -G lazybala
+# 创建非 root 用户 (支持 PUID/PGID)
+ARG PUID=1001
+ARG PGID=1001
+RUN addgroup -g ${PGID} -S lazybala && \
+    adduser -S lazybala -u ${PUID} -G lazybala
 
 # 更改目录所有权和权限
-RUN chown -R lazybala:lazybala /app && \
+RUN chown -R ${PUID}:${PGID} /app && \
     chmod -R 755 /app && \
     chmod -R 777 /app/audiobooks /app/config /app/cookies /app/bin
 

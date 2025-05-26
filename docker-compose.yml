@@ -9,6 +9,8 @@ services:
       args:
         BUILDTIME: ${BUILDTIME:-$(date -u +"%Y-%m-%dT%H:%M:%SZ")}
         VERSION: ${VERSION:-latest}
+        PUID: ${PUID:-1001}
+        PGID: ${PGID:-1001}
     image: lazybala:latest
     container_name: lazybala
     restart: unless-stopped

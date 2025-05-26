@@ -43,10 +43,12 @@ fi
 print_info "创建数据目录..."
 sudo mkdir -p "$DOCKER_DIR"/{audiobooks,config,cookies,bin}
 
-# 设置目录权限
-print_info "设置目录权限..."
+# 设置目录权限和所有权
+print_info "设置目录权限和所有权..."
 sudo chmod -R 755 "$DOCKER_DIR"
 sudo chmod -R 777 "$DOCKER_DIR"/{audiobooks,config,cookies,bin}
+# 设置为群晖标准用户组 (PUID=100, PGID=100)
+sudo chown -R 100:100 "$DOCKER_DIR"
 
 # 检查 Docker 和 Docker Compose
 print_info "检查 Docker 环境..."
@@ -68,6 +70,8 @@ docker-compose -f "$COMPOSE_FILE" down 2>/dev/null || true
 print_info "构建并启动 LazyBala..."
 export VERSION=$(git describe --tags --always 2>/dev/null || echo "latest")
 export BUILDTIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+export PUID=100
+export PGID=100
 
 docker-compose -f "$COMPOSE_FILE" up -d --build
 

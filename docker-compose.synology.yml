@@ -8,33 +8,35 @@ services:
       args:
         VERSION: ${VERSION:-latest}
         BUILDTIME: ${BUILDTIME:-$(date -u +"%Y-%m-%dT%H:%M:%SZ")}
+        PUID: ${PUID:-100}
+        PGID: ${PGID:-100}
     container_name: lazybala
     restart: unless-stopped
-    
-    # 群晖权限设置
-    user: "0:0"  # 使用 root 用户避免权限问题
-    
+
+    # 群晖权限设置 (使用群晖标准用户组)
+    user: "100:100"  # 使用群晖 users 组 (PUID=100, PGID=100)
+
     ports:
       - "8080:8080"
-    
+
     volumes:
       # 数据持久化目录（群晖路径示例）
       - /volume1/docker/lazybala/audiobooks:/app/audiobooks
       - /volume1/docker/lazybala/config:/app/config
       - /volume1/docker/lazybala/cookies:/app/cookies
       - /volume1/docker/lazybala/bin:/app/bin
-    
+
     environment:
       - PORT=8080
       - GIN_MODE=release
       - TZ=Asia/Shanghai
       # 群晖特定环境变量
-      - PUID=0
-      - PGID=0
-    
+      - PUID=100
+      - PGID=100
+
     networks:
       - lazybala-network
-    
+
     # 健康检查
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/"]
@@ -42,7 +44,7 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
-    
+
     # 资源限制（可选）
     deploy:
       resources:

@@ -65,9 +65,14 @@ RUN case "${TARGETARCH}" in \
 # 验证 yt-dlp 安装
 RUN /app/bin/yt-dlp --version || echo "yt-dlp installation verification failed"
 
-# 设置目录权限（使用 root 用户，权限更宽松）
+# 创建群晖兼容的用户和组
+RUN addgroup -g 100 users || true && \
+    adduser -D -u 100 -G users lazybala || true
+
+# 设置目录权限和所有权
 RUN chmod -R 755 /app && \
-    chmod -R 777 /app/audiobooks /app/config /app/cookies /app/bin
+    chmod -R 777 /app/audiobooks /app/config /app/cookies /app/bin && \
+    chown -R 100:100 /app
 
 # 暴露端口
 EXPOSE 8080
@@ -75,6 +80,8 @@ EXPOSE 8080
 # 设置环境变量
 ENV PORT=8080
 ENV GIN_MODE=release
+ENV PUID=100
+ENV PGID=100
 
 # 健康检查
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
@@ -90,5 +97,8 @@ LABEL org.opencontainers.image.title="LazyBala (Synology)" \
       org.opencontainers.image.licenses="MIT" \
       org.opencontainers.image.source="https://github.com/kis2show/lazybala"
 
-# 启动命令（使用 root 用户）
+# 切换到群晖兼容用户
+USER 100:100
+
+# 启动命令
 CMD ["./lazybala"]
