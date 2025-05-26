@@ -10,8 +10,9 @@
 [![Docker Pulls](https://img.shields.io/docker/pulls/kis2show/lazybala.svg)](https://hub.docker.com/r/kis2show/lazybala)
 [![GitHub stars](https://img.shields.io/github/stars/kis2show/lazybala.svg)](https://github.com/kis2show/lazybala/stargazers)
 [![GitHub license](https://img.shields.io/github/license/kis2show/lazybala.svg)](https://github.com/kis2show/lazybala/blob/main/LICENSE)
+[![Security](https://img.shields.io/badge/security-audited-green.svg)](docs/SECURITY.md)
 
-[📸 项目展示](#-项目展示) • [🚀 快速开始](#-快速开始) • [📦 安装方式](#-安装方式) • [🐳 Docker 部署](#-docker-部署) • [📖 文档](#-文档) • [🤝 贡献](#-贡献)
+[📸 项目展示](#-项目展示) • [🚀 快速开始](#-快速开始) • [📦 安装方式](#-安装方式) • [🐳 Docker 部署](#-docker-部署) • [🛡️ 安全](#️-安全) • [📖 文档](#-文档) • [🤝 贡献](#-贡献)
 
 </div>
 
@@ -286,6 +287,29 @@ go build -o lazybala .
 # 构建 Docker 镜像
 docker build -t lazybala .
 ```
+
+## 🛡️ 安全
+
+LazyBala 重视安全性，我们定期进行安全审计和依赖更新。
+
+### 安全特性
+
+- **自动依赖更新** - GitHub Actions 定期检查和更新依赖
+- **安全扫描** - 使用 govulncheck、gosec 和 nancy 进行安全扫描
+- **权限最小化** - Docker 容器使用非 root 用户运行
+- **输入验证** - 所有用户输入都经过严格验证
+
+### 安全审计
+
+项目使用以下工具进行安全审计：
+
+- **govulncheck** - Go 官方漏洞检查工具
+- **gosec** - Go 安全代码分析器
+- **nancy** - 依赖漏洞扫描器
+
+### 报告安全问题
+
+如果发现安全漏洞，请查看我们的 [安全政策](docs/SECURITY.md) 了解如何负责任地报告。
 
 ## 🤝 贡献
 

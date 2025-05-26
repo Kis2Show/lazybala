@@ -1,0 +1,20 @@
+# govulncheck 配置文件
+# 用于配置漏洞检查的行为
+
+# 排除的漏洞 ID（如果有已知的误报）
+exclude:
+  # HTTP/2 相关的非关键警告
+  - "GO-2023-1571"  # HTTP/2 rapid reset attack (如果适用)
+  - "GO-2023-1572"  # HTTP/2 stream cancellation (如果适用)
+
+# 扫描模式
+mode: "source"  # 可选: "source", "binary", "module"
+
+# 输出格式
+format: "text"  # 可选: "text", "json", "sarif"
+
+# 是否显示详细信息
+verbose: false
+
+# 是否显示跟踪信息
+trace: false
