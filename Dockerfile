@@ -64,11 +64,13 @@ COPY --from=backend-builder /app/*.html ./
 # 下载最新的 yt-dlp（支持多架构）
 ARG TARGETARCH
 RUN case "${TARGETARCH}" in \
-        "amd64") YT_DLP_ARCH="x86_64" ;; \
-        "arm64") YT_DLP_ARCH="aarch64" ;; \
-        *) YT_DLP_ARCH="x86_64" ;; \
+        "amd64") YT_DLP_FILE="yt-dlp_linux" ;; \
+        "arm64") YT_DLP_FILE="yt-dlp_linux_aarch64" ;; \
+        "arm") YT_DLP_FILE="yt-dlp_linux_armv7l" ;; \
+        *) YT_DLP_FILE="yt-dlp_linux" ;; \
     esac && \
-    wget -O /app/bin/yt-dlp "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_linux_${YT_DLP_ARCH}" && \
+    echo "Downloading yt-dlp for ${TARGETARCH}: ${YT_DLP_FILE}" && \
+    wget -O /app/bin/yt-dlp "https://github.com/yt-dlp/yt-dlp/releases/latest/download/${YT_DLP_FILE}" && \
     chmod +x /app/bin/yt-dlp
 
 # 验证 yt-dlp 安装
