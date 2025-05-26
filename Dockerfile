@@ -61,9 +61,17 @@ COPY --from=backend-builder /app/lazybala .
 # 复制 HTML 文件
 COPY --from=backend-builder /app/*.html ./
 
-# 复制权限修复脚本
-COPY scripts/fix-permissions.sh /usr/local/bin/fix-permissions.sh
-RUN chmod +x /usr/local/bin/fix-permissions.sh
+# 创建启动脚本
+RUN echo '#!/bin/sh\n\
+echo "LazyBala 启动中..."\n\
+echo "检查 yt-dlp 权限..."\n\
+if [ -f "/app/bin/yt-dlp" ]; then\n\
+    chmod +x /app/bin/yt-dlp 2>/dev/null || true\n\
+    echo "yt-dlp 权限检查完成"\n\
+fi\n\
+echo "启动应用..."\n\
+exec ./lazybala' > /usr/local/bin/start.sh && \
+    chmod +x /usr/local/bin/start.sh
 
 # 下载最新的 yt-dlp（支持多架构）
 ARG TARGETARCH
@@ -115,6 +123,5 @@ LABEL org.opencontainers.image.title="LazyBala" \
       org.opencontainers.image.licenses="MIT" \
       org.opencontainers.image.source="https://github.com/kis2show/lazybala"
 
-# 启动命令（使用权限修复脚本）
-ENTRYPOINT ["/usr/local/bin/fix-permissions.sh"]
-CMD ["./lazybala"]
+# 启动命令
+CMD ["/usr/local/bin/start.sh"]
