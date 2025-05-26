@@ -1,0 +1,72 @@
+# LazyBala Git 属性配置
+
+# 设置默认行为
+* text=auto
+
+# 源代码文件使用 LF
+*.go text eol=lf
+*.js text eol=lf
+*.html text eol=lf
+*.css text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.toml text eol=lf
+
+# Docker 相关文件使用 LF
+Dockerfile text eol=lf
+Dockerfile.* text eol=lf
+.dockerignore text eol=lf
+docker-compose*.yml text eol=lf
+
+# 配置文件使用 LF
+.gitignore text eol=lf
+.gitattributes text eol=lf
+Makefile text eol=lf
+
+# Shell 脚本使用 LF
+*.sh text eol=lf
+
+# Windows 脚本使用 CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# 二进制文件
+*.exe binary
+*.dll binary
+*.so binary
+*.dylib binary
+*.zip binary
+*.tar.gz binary
+*.jpg binary
+*.jpeg binary
+*.png binary
+*.gif binary
+*.ico binary
+*.mp3 binary
+*.mp4 binary
+*.m4a binary
+*.wav binary
+*.flac binary
+*.ogg binary
+*.webm binary
+*.mkv binary
+*.avi binary
+
+# 字体文件
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary
+*.eot binary
+
+# 其他二进制文件
+*.pdf binary
+*.doc binary
+*.docx binary
+*.xls binary
+*.xlsx binary
+*.ppt binary
+*.pptx binary
