@@ -94,6 +94,7 @@ ENV PORT=8080
 ENV GIN_MODE=release
 ENV PUID=100
 ENV PGID=100
+ENV DOCKER_ENV=true
 
 # 健康检查
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \

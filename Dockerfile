@@ -124,6 +124,7 @@ EXPOSE 8080
 # 设置环境变量
 ENV PORT=8080
 ENV GIN_MODE=release
+ENV DOCKER_ENV=true
 
 # 健康检查 - 使用专用的健康检查端点
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \

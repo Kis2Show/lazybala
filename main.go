@@ -175,9 +175,13 @@ func createDirectories() {
 		if err := os.MkdirAll(dir, 0777); err != nil {
 			log.Printf("创建目录 %s 失败: %v", dir, err)
 		} else {
-			// 确保目录权限正确
+			// 尝试设置目录权限（Docker环境中可能失败，但不影响功能）
 			if err := os.Chmod(dir, 0777); err != nil {
-				log.Printf("设置目录 %s 权限失败: %v", dir, err)
+				// 在Docker环境中，挂载卷的权限修改可能失败，但不影响实际功能
+				// 只在非Docker环境或确实有权限问题时记录警告
+				if _, dockerEnv := os.LookupEnv("DOCKER_ENV"); !dockerEnv {
+					log.Printf("警告: 设置目录 %s 权限失败: %v (功能不受影响)", dir, err)
+				}
 			}
 		}
 	}
