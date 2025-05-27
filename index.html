@@ -1128,6 +1128,7 @@
 
         <div class="btn-group">
           <button class="btn btn-secondary" onclick="checkUpdate()">检查更新</button>
+          <button class="btn btn-secondary" onclick="updateYtDlp()" id="updateYtDlpBtn">更新 yt-dlp</button>
           <button class="btn btn-secondary" onclick="viewLogs()">查看日志</button>
         </div>
 
@@ -1750,10 +1751,103 @@
         const response = await fetch('/api/version/check');
         if (response.ok) {
           const data = await response.json();
-          alert(`当前版本: ${data.current}\n最新版本: ${data.latest}\n${data.has_update ? '发现新版本！' : '已是最新版本'}`);
+
+          let message = '=== 版本检查结果 ===\n\n';
+
+          // LazyBala应用版本信息
+          message += '📱 LazyBala 应用:\n';
+          message += `   当前版本: ${data.app.current}\n`;
+          if (data.app.error) {
+            message += `   检查失败: ${data.app.error}\n`;
+          } else {
+            message += `   最新版本: ${data.app.latest}\n`;
+            message += `   状态: ${data.app.has_update ? '🔄 发现新版本！' : '✅ 已是最新版本'}\n`;
+          }
+
+          message += '\n';
+
+          // yt-dlp版本信息
+          message += '🔧 yt-dlp 工具:\n';
+          message += `   当前版本: ${data.ytdlp.current}\n`;
+          if (data.ytdlp.error) {
+            message += `   检查失败: ${data.ytdlp.error}\n`;
+          } else {
+            message += `   最新版本: ${data.ytdlp.latest}\n`;
+            message += `   状态: ${data.ytdlp.has_update ? '🔄 发现新版本！' : '✅ 已是最新版本'}\n`;
+          }
+
+          // 更新提示
+          if (data.app.has_update || data.ytdlp.has_update) {
+            message += '\n💡 更新提示:\n';
+            if (data.app.has_update) {
+              message += '• LazyBala 应用有新版本，请访问 GitHub 下载\n';
+            }
+            if (data.ytdlp.has_update) {
+              message += '• yt-dlp 工具有新版本，可在设置中一键更新\n';
+            }
+          }
+
+          alert(message);
+
+          // 更新版本显示
+          const versionText = document.getElementById('versionText');
+          if (versionText) {
+            versionText.textContent = `LazyBala: ${data.app.current} | yt-dlp: ${data.ytdlp.current}`;
+          }
         }
       } catch (error) {
-        alert('检查更新失败');
+        console.error('检查更新失败:', error);
+        alert('检查更新失败: ' + error.message);
+      }
+    }
+
+    // 更新 yt-dlp
+    async function updateYtDlp() {
+      const updateBtn = document.getElementById('updateYtDlpBtn');
+      const originalText = updateBtn.textContent;
+
+      if (!confirm('确定要更新 yt-dlp 到最新版本吗？\n\n更新过程中下载功能将暂时不可用。')) {
+        return;
+      }
+
+      try {
+        updateBtn.disabled = true;
+        updateBtn.textContent = '更新中...';
+
+        const response = await fetch('/api/version/update', {
+          method: 'POST'
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          alert('✅ ' + data.message + '\n\n更新完成后会自动生效，无需重启应用。');
+
+          // 5秒后重新检查版本
+          setTimeout(async () => {
+            try {
+              const checkResponse = await fetch('/api/version/check');
+              if (checkResponse.ok) {
+                const versionData = await checkResponse.json();
+                const versionText = document.getElementById('versionText');
+                if (versionText) {
+                  versionText.textContent = `LazyBala: ${versionData.app.current} | yt-dlp: ${versionData.ytdlp.current}`;
+                }
+              }
+            } catch (error) {
+              console.error('重新检查版本失败:', error);
+            }
+          }, 5000);
+
+        } else {
+          const error = await response.json();
+          alert('❌ 更新失败: ' + (error.error || '未知错误'));
+        }
+      } catch (error) {
+        console.error('更新失败:', error);
+        alert('❌ 更新失败: ' + error.message);
+      } finally {
+        updateBtn.disabled = false;
+        updateBtn.textContent = originalText;
       }
     }
 
@@ -2651,12 +2745,31 @@
         refreshHistory();
         updateDownloadStats();
 
+        // 初始化版本信息
+        initVersionInfo();
+
         console.log('页面初始化完成');
       } catch (error) {
         console.error('页面初始化失败:', error);
         alert('页面初始化失败，请刷新页面重试');
       }
     });
+
+    // 初始化版本信息
+    async function initVersionInfo() {
+      try {
+        const response = await fetch('/api/version/check');
+        if (response.ok) {
+          const data = await response.json();
+          const versionText = document.getElementById('versionText');
+          if (versionText) {
+            versionText.textContent = `LazyBala: ${data.app.current} | yt-dlp: ${data.ytdlp.current}`;
+          }
+        }
+      } catch (error) {
+        console.error('获取版本信息失败:', error);
+      }
+    }
 
     // 设置页面可见性检测
     function setupVisibilityChange() {

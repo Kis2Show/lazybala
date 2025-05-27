@@ -6,8 +6,10 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 )
 
@@ -107,17 +109,45 @@ func generateYtDlpConfig(config Config) error {
 // GitHub Release 结构
 type GitHubRelease struct {
 	TagName string `json:"tag_name"`
+	HTMLURL string `json:"html_url"`
 	Assets  []struct {
 		Name               string `json:"name"`
 		BrowserDownloadURL string `json:"browser_download_url"`
 	} `json:"assets"`
 }
 
-// 检查最新版本
-func checkLatestVersion() (string, string, error) {
+// 检查LazyBala应用最新版本
+func checkLatestAppVersion() (string, string, error) {
+	resp, err := http.Get("https://api.github.com/repos/kis2show/lazybala/releases/latest")
+	if err != nil {
+		return "", "", fmt.Errorf("获取LazyBala版本信息失败: %v", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", "", fmt.Errorf("读取响应失败: %v", err)
+	}
+
+	var release GitHubRelease
+	if err := json.Unmarshal(body, &release); err != nil {
+		return "", "", fmt.Errorf("解析响应失败: %v", err)
+	}
+
+	// 获取发布页面链接
+	downloadURL := release.HTMLURL
+	if downloadURL == "" {
+		downloadURL = "https://github.com/kis2show/lazybala/releases/latest"
+	}
+
+	return release.TagName, downloadURL, nil
+}
+
+// 检查yt-dlp最新版本
+func checkLatestYtDlpVersion() (string, string, error) {
 	resp, err := http.Get("https://api.github.com/repos/yt-dlp/yt-dlp/releases/latest")
 	if err != nil {
-		return "", "", fmt.Errorf("获取版本信息失败: %v", err)
+		return "", "", fmt.Errorf("获取yt-dlp版本信息失败: %v", err)
 	}
 	defer resp.Body.Close()
 
@@ -157,6 +187,11 @@ func checkLatestVersion() (string, string, error) {
 	return release.TagName, downloadURL, nil
 }
 
+// 保持向后兼容的函数
+func checkLatestVersion() (string, string, error) {
+	return checkLatestYtDlpVersion()
+}
+
 // 获取当前 yt-dlp 版本
 func getCurrentYtDlpVersion() (string, error) {
 	ytDlpPath := getYtDlpPath()
@@ -165,14 +200,96 @@ func getCurrentYtDlpVersion() (string, error) {
 		return "未安装", nil
 	}
 
-	// 这里可以执行 yt-dlp --version 来获取版本
-	// 简化处理，返回文件修改时间作为版本标识
-	info, err := os.Stat(ytDlpPath)
+	// 尝试执行 yt-dlp --version 来获取真实版本
+	cmd := exec.Command(ytDlpPath, "--version")
+	output, err := cmd.Output()
 	if err != nil {
-		return "未知", err
+		// 如果执行失败，返回文件修改时间作为版本标识
+		info, statErr := os.Stat(ytDlpPath)
+		if statErr != nil {
+			return "未知", statErr
+		}
+		return "文件版本: " + info.ModTime().Format("2006-01-02"), nil
 	}
 
-	return info.ModTime().Format("2006-01-02"), nil
+	version := strings.TrimSpace(string(output))
+	if version == "" {
+		return "未知版本", nil
+	}
+
+	return version, nil
+}
+
+// 版本比较函数
+func compareVersions(current, latest string) int {
+	// 处理特殊情况
+	if current == "dev" || current == "unknown" {
+		return -1 // 开发版本总是认为需要更新
+	}
+
+	// 移除版本号前的 'v' 前缀
+	current = strings.TrimPrefix(current, "v")
+	latest = strings.TrimPrefix(latest, "v")
+
+	// 简单的字符串比较（对于语义版本号）
+	if current == latest {
+		return 0
+	}
+
+	// 分割版本号进行比较
+	currentParts := strings.Split(current, ".")
+	latestParts := strings.Split(latest, ".")
+
+	// 补齐版本号长度
+	maxLen := len(currentParts)
+	if len(latestParts) > maxLen {
+		maxLen = len(latestParts)
+	}
+
+	for len(currentParts) < maxLen {
+		currentParts = append(currentParts, "0")
+	}
+	for len(latestParts) < maxLen {
+		latestParts = append(latestParts, "0")
+	}
+
+	// 逐个比较版本号部分
+	for i := 0; i < maxLen; i++ {
+		currentNum := parseVersionPart(currentParts[i])
+		latestNum := parseVersionPart(latestParts[i])
+
+		if currentNum < latestNum {
+			return -1
+		} else if currentNum > latestNum {
+			return 1
+		}
+	}
+
+	return 0
+}
+
+// 解析版本号部分
+func parseVersionPart(part string) int {
+	// 移除非数字字符
+	numStr := ""
+	for _, char := range part {
+		if char >= '0' && char <= '9' {
+			numStr += string(char)
+		} else {
+			break
+		}
+	}
+
+	if numStr == "" {
+		return 0
+	}
+
+	num, err := strconv.Atoi(numStr)
+	if err != nil {
+		return 0
+	}
+
+	return num
 }
 
 // 更新 yt-dlp

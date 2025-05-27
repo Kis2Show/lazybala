@@ -386,31 +386,62 @@ func getVersionInfo(c *gin.Context) {
 
 // 检查版本更新
 func checkVersion(c *gin.Context) {
-	latestVersion, downloadURL, err := checkLatestVersion()
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+	// 检查LazyBala应用版本
+	appLatestVersion, appDownloadURL, appErr := checkLatestAppVersion()
+	appCurrentVersion := version
+	appHasUpdate := false
+
+	if appErr == nil && appLatestVersion != "" {
+		appHasUpdate = compareVersions(appCurrentVersion, appLatestVersion) < 0
 	}
 
-	currentVersion, _ := getCurrentYtDlpVersion()
+	// 检查yt-dlp版本
+	ytdlpLatestVersion, ytdlpDownloadURL, ytdlpErr := checkLatestYtDlpVersion()
+	ytdlpCurrentVersion, _ := getCurrentYtDlpVersion()
+	ytdlpHasUpdate := false
 
-	c.JSON(http.StatusOK, gin.H{
-		"current_version": currentVersion,
-		"latest_version":  latestVersion,
-		"has_update":      latestVersion != currentVersion,
-		"download_url":    downloadURL,
-	})
+	if ytdlpErr == nil && ytdlpLatestVersion != "" {
+		ytdlpHasUpdate = ytdlpLatestVersion != ytdlpCurrentVersion
+	}
+
+	response := gin.H{
+		"app": gin.H{
+			"current":      appCurrentVersion,
+			"latest":       appLatestVersion,
+			"has_update":   appHasUpdate,
+			"download_url": appDownloadURL,
+			"error":        nil,
+		},
+		"ytdlp": gin.H{
+			"current":      ytdlpCurrentVersion,
+			"latest":       ytdlpLatestVersion,
+			"has_update":   ytdlpHasUpdate,
+			"download_url": ytdlpDownloadURL,
+			"error":        nil,
+		},
+	}
+
+	if appErr != nil {
+		response["app"].(gin.H)["error"] = appErr.Error()
+	}
+	if ytdlpErr != nil {
+		response["ytdlp"].(gin.H)["error"] = ytdlpErr.Error()
+	}
+
+	c.JSON(http.StatusOK, response)
 }
 
-// 更新版本
+// 更新yt-dlp版本
 func updateVersion(c *gin.Context) {
 	go func() {
 		if err := updateYtDlp(); err != nil {
-			fmt.Printf("更新失败: %v\n", err)
+			fmt.Printf("yt-dlp更新失败: %v\n", err)
+		} else {
+			fmt.Println("yt-dlp更新成功")
 		}
 	}()
 
-	c.JSON(http.StatusOK, gin.H{"message": "更新任务已启动"})
+	c.JSON(http.StatusOK, gin.H{"message": "yt-dlp更新任务已启动，请稍候..."})
 }
 
 // WebSocket 处理
