@@ -254,6 +254,7 @@ lazybala/
 - [yt-dlp 升级指南](docs/YTDLP_UPGRADE.md)
 - [v2.0 迁移指南](docs/MIGRATION_V2.md) 🆕
 - [健康检查修复指南](docs/HEALTHCHECK_FIX.md) 🆕
+- [GitHub Actions 修复指南](docs/GITHUB_ACTIONS_FIX.md) 🆕
 - [API 文档](docs/API.md)
 
 ## 🛠️ 开发
