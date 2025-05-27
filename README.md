@@ -247,6 +247,14 @@ lazybala/
    分享地址：https://www.bilibili.com/video/BV1KmzCYMEaq?p=2/type=playlist
    ```
 
+## 📚 文档
+
+- [Docker 部署指南](DOCKER.md)
+- [群晖 NAS 部署指南](docs/SYNOLOGY_DEPLOYMENT.md)
+- [yt-dlp 升级指南](docs/YTDLP_UPGRADE.md)
+- [v2.0 迁移指南](docs/MIGRATION_V2.md) 🆕
+- [API 文档](docs/API.md)
+
 ## 🛠️ 开发
 
 ### 技术栈

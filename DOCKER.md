@@ -195,13 +195,17 @@ networks:
     driver: bridge
 ```
 
-### yt-dlp 升级管理
+### yt-dlp 管理
 
-LazyBala 支持将 yt-dlp 作为可挂载卷，方便手动升级：
+**重要变更**: 从 v2.0 开始，yt-dlp 保持在容器内，不再作为外部卷挂载。这避免了权限问题和文件覆盖问题。
 
-```yaml
-volumes:
-  - ./data/bin:/app/bin  # 二进制工具目录
+#### 容器内 yt-dlp 更新
+```bash
+# 通过应用内置的更新功能（推荐）
+# 访问设置页面进行更新
+
+# 或通过 API 更新
+curl -X POST http://localhost:8080/api/update-ytdlp
 ```
 
 #### 自动升级脚本

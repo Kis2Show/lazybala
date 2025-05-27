@@ -24,7 +24,8 @@ services:
       - /volume1/docker/lazybala/audiobooks:/app/audiobooks
       - /volume1/docker/lazybala/config:/app/config
       - /volume1/docker/lazybala/cookies:/app/cookies
-      - /volume1/docker/lazybala/bin:/app/bin
+      # 注意：移除 bin 目录挂载，yt-dlp 保持在容器内
+      # - /volume1/docker/lazybala/bin:/app/bin
 
     environment:
       - PORT=8080

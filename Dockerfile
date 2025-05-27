@@ -63,12 +63,28 @@ COPY --from=backend-builder /app/*.html ./
 
 # 创建启动脚本
 RUN echo '#!/bin/sh\n\
-echo "LazyBala 启动中..."\n\
-echo "检查 yt-dlp 权限..."\n\
+echo "======================================"\n\
+echo "   LazyBala - 费劲巴拉下载器"\n\
+echo "======================================"\n\
+echo "正在启动 LazyBala..."\n\
+\n\
+# 检查 yt-dlp\n\
+echo "检查 yt-dlp 状态..."\n\
 if [ -f "/app/bin/yt-dlp" ]; then\n\
     chmod +x /app/bin/yt-dlp 2>/dev/null || true\n\
-    echo "yt-dlp 权限检查完成"\n\
+    if /app/bin/yt-dlp --version >/dev/null 2>&1; then\n\
+        YT_VERSION=$(/app/bin/yt-dlp --version 2>/dev/null || echo "unknown")\n\
+        echo "✓ yt-dlp 可用: $YT_VERSION"\n\
+    else\n\
+        echo "✗ yt-dlp 文件存在但无法执行"\n\
+        exit 1\n\
+    fi\n\
+else\n\
+    echo "✗ yt-dlp 文件不存在: /app/bin/yt-dlp"\n\
+    echo "这可能是由于 Docker 卷挂载覆盖了容器内的文件"\n\
+    exit 1\n\
 fi\n\
+\n\
 echo "启动应用..."\n\
 exec ./lazybala' > /usr/local/bin/start.sh && \
     chmod +x /usr/local/bin/start.sh
@@ -113,8 +129,8 @@ ENV GIN_MODE=release
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:8080/ || exit 1
 
-# 数据卷
-VOLUME ["/app/audiobooks", "/app/config", "/app/cookies", "/app/bin"]
+# 数据卷 (移除 /app/bin，保持 yt-dlp 在容器内)
+VOLUME ["/app/audiobooks", "/app/config", "/app/cookies"]
 
 # 添加标签
 LABEL org.opencontainers.image.title="LazyBala" \

@@ -21,8 +21,8 @@ services:
       - ./data/audiobooks:/app/audiobooks
       - ./data/config:/app/config
       - ./data/cookies:/app/cookies
-      # 二进制工具目录（可手动升级 yt-dlp）
-      - ./data/bin:/app/bin
+      # 注意：移除 bin 目录挂载，yt-dlp 保持在容器内
+      # - ./data/bin:/app/bin
     environment:
       - PORT=8080
       - GIN_MODE=release
@@ -59,8 +59,8 @@ services:
       - ./data/audiobooks:/app/audiobooks
       - ./data/config:/app/config
       - ./data/cookies:/app/cookies
-      # 二进制工具目录（开发环境）
-      - ./data/bin:/app/bin
+      # 注意：开发环境也移除 bin 目录挂载
+      # - ./data/bin:/app/bin
     environment:
       - PORT=8080
       - GIN_MODE=debug
@@ -81,5 +81,6 @@ volumes:
     driver: local
   cookies:
     driver: local
-  bin:
-    driver: local
+  # 移除 bin 卷定义，yt-dlp 保持在容器内
+  # bin:
+  #   driver: local
