@@ -127,6 +127,40 @@
       border-color: var(--primary-color);
     }
 
+    .input-group {
+      margin-bottom: 20px;
+    }
+
+    .input-label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .input-hint {
+      margin-top: 6px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.4;
+    }
+
+    .button-group {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .shortcut-hint {
+      font-size: 12px;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
     .btn {
       background: var(--primary-color);
       color: white;
@@ -632,6 +666,67 @@
       color: var(--text-secondary);
       padding: 2px 0;
     }
+
+    /* 使用说明样式 */
+    .usage-tips {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .tip-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 15px;
+      background: var(--bg-tertiary);
+      border-radius: 8px;
+      border-left: 3px solid var(--primary-color);
+    }
+
+    .tip-icon {
+      font-size: 20px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .tip-content {
+      flex: 1;
+    }
+
+    .tip-content strong {
+      color: var(--text-primary);
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .tip-content ul {
+      margin: 8px 0 0 0;
+      padding-left: 20px;
+      color: var(--text-secondary);
+    }
+
+    .tip-content li {
+      margin: 4px 0;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .tip-content p {
+      margin: 4px 0;
+      color: var(--text-secondary);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .tip-content code {
+      background: var(--bg-primary);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+      font-size: 12px;
+      color: var(--primary-color);
+    }
   </style>
 </head>
 <body>
@@ -650,11 +745,30 @@
     </div>
 
     <div class="input-box">
-      <h3>输入链接</h3>
-      <input type="text" class="input-field" placeholder="https://www.bilibili.com/video/BV1YeXDYTELy" id="urlInput">
-      <input type="text" class="input-field" placeholder="保存路径: test" value="test" id="pathInput">
+      <h3>📥 输入下载信息</h3>
 
-      <button class="btn" onclick="testCheck()">检查列表</button>
+      <div class="input-group">
+        <label class="input-label">🔗 视频链接</label>
+        <input type="text" class="input-field" placeholder="请输入哔哩哔哩视频链接，如：https://www.bilibili.com/video/BV1YeXDYTELy" id="urlInput">
+        <div class="input-hint">
+          支持单个视频、播放列表、合集等多种链接格式
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label class="input-label">📁 保存路径</label>
+        <input type="text" class="input-field" placeholder="文件保存的子目录名称，如：test、音乐、教程等" value="test" id="pathInput">
+        <div class="input-hint">
+          文件将保存到 audiobooks/[您输入的路径]/ 目录下
+        </div>
+      </div>
+
+      <div class="button-group">
+        <button class="btn" onclick="testCheck()">🔍 检查列表</button>
+        <div class="shortcut-hint">
+          快捷键：<kbd>Ctrl</kbd> + <kbd>Enter</kbd>
+        </div>
+      </div>
     </div>
 
     <div class="input-box" id="resultBox" style="display: none;">
@@ -700,6 +814,47 @@
       <!-- 已完成文件 -->
       <div id="completedFiles" class="completed-files" style="display: none;"></div>
     </div>
+
+    <!-- 使用说明 -->
+    <div class="input-box" style="margin-top: 30px;">
+      <h3>📖 使用说明</h3>
+      <div class="usage-tips">
+        <div class="tip-item">
+          <span class="tip-icon">🔗</span>
+          <div class="tip-content">
+            <strong>支持的链接格式：</strong>
+            <ul>
+              <li>单个视频：https://www.bilibili.com/video/BV1234567890</li>
+              <li>播放列表：https://www.bilibili.com/playlist?list=...</li>
+              <li>合集：https://space.bilibili.com/uid/channel/collectiondetail?sid=...</li>
+              <li>UP主空间：https://space.bilibili.com/uid</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="tip-item">
+          <span class="tip-icon">📁</span>
+          <div class="tip-content">
+            <strong>保存路径说明：</strong>
+            <p>文件将保存到 <code>audiobooks/[您输入的路径]/</code> 目录下</p>
+            <p>建议使用有意义的名称，如：音乐、教程、有声书等</p>
+          </div>
+        </div>
+
+        <div class="tip-item">
+          <span class="tip-icon">⌨️</span>
+          <div class="tip-content">
+            <strong>快捷键：</strong>
+            <ul>
+              <li><kbd>Ctrl</kbd> + <kbd>Enter</kbd> - 快速检查列表</li>
+              <li><kbd>Ctrl</kbd> + <kbd>,</kbd> - 打开设置</li>
+              <li><kbd>Ctrl</kbd> + <kbd>D</kbd> - 切换主题</li>
+              <li><kbd>Escape</kbd> - 关闭设置</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- 设置弹窗 -->
@@ -730,51 +885,63 @@
         </div>
 
         <div class="setting-group">
-          <label class="setting-label">保存路径</label>
-          <div class="setting-desc">下载文件的保存目录</div>
+          <label class="setting-label">📁 保存路径</label>
+          <div class="setting-desc">下载文件的保存目录，相对于程序根目录</div>
           <input type="text" class="input-field" id="settingSavePath" placeholder="audiobooks/test">
+          <div class="setting-desc" style="margin-top: 6px; font-size: 11px;">
+            💡 示例：audiobooks/音乐、audiobooks/教程、downloads/有声书等
+          </div>
         </div>
 
         <div class="setting-group">
-          <label class="setting-label">文件名格式</label>
+          <label class="setting-label">📝 文件名格式</label>
           <div class="setting-desc">下载文件的命名格式，支持 %(title)s, %(uploader)s 等变量</div>
           <select class="input-field" id="settingTitleRegex">
-            <option value="%(title)s.%(ext)s">标题.扩展名</option>
+            <option value="%(title)s.%(ext)s">标题.扩展名 (推荐)</option>
             <option value="%(uploader)s - %(title)s.%(ext)s">UP主 - 标题.扩展名</option>
             <option value="[%(upload_date)s] %(title)s.%(ext)s">[日期] 标题.扩展名</option>
             <option value="%(playlist_index)s. %(title)s.%(ext)s">序号. 标题.扩展名</option>
             <option value="%(autonumber)s.%(ext)s">序号.扩展名</option>
             <option value="custom">自定义格式</option>
           </select>
-          <input type="text" class="input-field" id="customTitleRegex" placeholder="自定义格式" style="display: none; margin-top: 8px;">
+          <input type="text" class="input-field" id="customTitleRegex" placeholder="如：%(title)s - %(uploader)s.%(ext)s" style="display: none; margin-top: 8px;">
+          <div class="setting-desc" style="margin-top: 6px; font-size: 11px;">
+            💡 常用变量：%(title)s=标题、%(uploader)s=UP主、%(upload_date)s=上传日期、%(ext)s=扩展名
+          </div>
         </div>
 
         <div class="setting-group">
-          <label class="setting-label">音质选择</label>
+          <label class="setting-label">🎵 音质选择</label>
           <div class="setting-desc">下载音频的质量设置</div>
           <select class="input-field" id="settingQuality">
-            <option value="bestaudio/best">最佳音质 (推荐)</option>
-            <option value="bestaudio[ext=m4a]/best[ext=m4a]">M4A格式</option>
-            <option value="bestaudio[ext=mp3]/best[ext=mp3]">MP3格式</option>
-            <option value="bestaudio[ext=opus]/best[ext=opus]">OPUS格式</option>
+            <option value="bestaudio/best">最佳音质 (推荐，自动选择最佳格式)</option>
+            <option value="bestaudio[ext=m4a]/best[ext=m4a]">M4A格式 (高质量，兼容性好)</option>
+            <option value="bestaudio[ext=mp3]/best[ext=mp3]">MP3格式 (通用性强)</option>
+            <option value="bestaudio[ext=opus]/best[ext=opus]">OPUS格式 (高压缩比)</option>
             <option value="worst">最低音质 (节省空间)</option>
           </select>
+          <div class="setting-desc" style="margin-top: 6px; font-size: 11px;">
+            💡 推荐使用"最佳音质"，系统会自动选择最适合的音频格式和质量
+          </div>
         </div>
 
         <div class="setting-group">
-          <label class="setting-label">重试次数</label>
-          <div class="setting-desc">下载失败时的重试次数 (1-10)</div>
+          <label class="setting-label">🔄 重试次数</label>
+          <div class="setting-desc">下载失败时的重试次数，网络不稳定时建议设置较高值</div>
           <input type="range" class="input-field" id="settingRetryCount" min="1" max="10" value="5" oninput="updateRetryDisplay(this.value)">
           <div style="text-align: center; margin-top: 5px; font-size: 14px; color: var(--text-secondary);">
             <span id="retryDisplay">5</span> 次
+          </div>
+          <div class="setting-desc" style="margin-top: 6px; font-size: 11px;">
+            💡 推荐设置 3-5 次，过高可能导致下载时间过长
           </div>
         </div>
 
         <div class="setting-group">
           <div class="setting-row">
             <div>
-              <div class="setting-label">下载封面</div>
-              <div class="setting-desc">同时下载视频封面图片</div>
+              <div class="setting-label">🖼️ 下载封面</div>
+              <div class="setting-desc">同时下载视频封面图片，便于识别内容</div>
             </div>
             <div class="setting-switch" id="thumbnailSwitch" onclick="toggleSwitch('thumbnailSwitch', 'settingWriteThumbnail')">
             </div>
@@ -785,8 +952,8 @@
         <div class="setting-group">
           <div class="setting-row">
             <div>
-              <div class="setting-label">自动重命名</div>
-              <div class="setting-desc">自动处理文件名中的特殊字符</div>
+              <div class="setting-label">✏️ 自动重命名</div>
+              <div class="setting-desc">自动处理文件名中的特殊字符，确保兼容性</div>
             </div>
             <div class="setting-switch active" id="autoRenameSwitch" onclick="toggleSwitch('autoRenameSwitch', 'settingAutoRename')">
             </div>
