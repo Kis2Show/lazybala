@@ -60,23 +60,23 @@ on:
   continue-on-error: true
   run: |
     echo "=== Gosec Security Scanner Setup ==="
-    
-    # 设置变量
-    GOSEC_VERSION="2.18.2"
-    DOWNLOAD_URL="https://github.com/securecodewarrior/gosec/releases/download/v${GOSEC_VERSION}/gosec_${GOSEC_VERSION}_linux_amd64.tar.gz"
-    
+
+    # 设置变量 - 使用正确的仓库和版本
+    GOSEC_VERSION="2.22.4"
+    DOWNLOAD_URL="https://github.com/securego/gosec/releases/download/v${GOSEC_VERSION}/gosec_${GOSEC_VERSION}_linux_amd64.tar.gz"
+
     # 下载并安装
     WORK_DIR="/tmp/gosec-install"
     mkdir -p "${WORK_DIR}"
     cd "${WORK_DIR}"
-    
+
     curl -fsSL "${DOWNLOAD_URL}" -o gosec.tar.gz
     tar -xzf gosec.tar.gz
     sudo mv gosec /usr/local/bin/gosec
-    
+
     # 验证安装
     gosec --version
-    
+
     # 运行扫描
     cd "${GITHUB_WORKSPACE}"
     gosec -conf .gosec.json -fmt sarif -out gosec-results.sarif ./...
@@ -201,6 +201,6 @@ A: 可以，但不推荐。建议修复而不是禁用。
 
 ---
 
-**修复版本**: v2.1.0  
-**最后更新**: 2024年  
+**修复版本**: v2.1.0
+**最后更新**: 2024年
 **状态**: ✅ 已修复并测试

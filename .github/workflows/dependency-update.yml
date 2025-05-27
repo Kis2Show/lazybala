@@ -233,9 +233,9 @@ jobs:
       run: |
         echo "=== Gosec Security Scanner Setup ==="
 
-        # 设置变量
-        GOSEC_VERSION="2.18.2"
-        DOWNLOAD_URL="https://github.com/securecodewarrior/gosec/releases/download/v${GOSEC_VERSION}/gosec_${GOSEC_VERSION}_linux_amd64.tar.gz"
+        # 设置变量 - 使用正确的仓库和版本
+        GOSEC_VERSION="2.22.4"
+        DOWNLOAD_URL="https://github.com/securego/gosec/releases/download/v${GOSEC_VERSION}/gosec_${GOSEC_VERSION}_linux_amd64.tar.gz"
 
         echo "Downloading Gosec v${GOSEC_VERSION}..."
         echo "URL: ${DOWNLOAD_URL}"

@@ -63,7 +63,7 @@ fi
 print_info "安装 govulncheck..."
 if go install golang.org/x/vuln/cmd/govulncheck@latest; then
     print_success "govulncheck 安装成功"
-    
+
     print_info "运行漏洞检查..."
     if govulncheck ./...; then
         print_success "未发现已知漏洞"
@@ -84,25 +84,25 @@ if go install github.com/securecodewarrior/gosec/v2/cmd/gosec@latest 2>/dev/null
     print_success "gosec 通过 go install 安装成功"
 else
     print_warning "go install 安装 gosec 失败，尝试其他方法..."
-    
+
     # 方法2: 下载预编译二进制
     if command -v curl >/dev/null 2>&1; then
         print_info "尝试下载预编译的 gosec..."
-        GOSEC_VERSION="2.18.2"
+        GOSEC_VERSION="2.22.4"
         OS=$(uname -s | tr '[:upper:]' '[:lower:]')
         ARCH=$(uname -m)
-        
+
         # 转换架构名称
         case $ARCH in
             x86_64) ARCH="amd64" ;;
             aarch64) ARCH="arm64" ;;
             armv7l) ARCH="armv7" ;;
         esac
-        
+
         TEMP_DIR=$(mktemp -d)
         cd "$TEMP_DIR"
-        
-        if curl -L "https://github.com/securecodewarrior/gosec/releases/download/v${GOSEC_VERSION}/gosec_${GOSEC_VERSION}_${OS}_${ARCH}.tar.gz" -o gosec.tar.gz 2>/dev/null; then
+
+        if curl -L "https://github.com/securego/gosec/releases/download/v${GOSEC_VERSION}/gosec_${GOSEC_VERSION}_${OS}_${ARCH}.tar.gz" -o gosec.tar.gz 2>/dev/null; then
             if tar -xzf gosec.tar.gz 2>/dev/null; then
                 if [ -f "gosec" ]; then
                     chmod +x gosec
@@ -114,7 +114,7 @@ else
                 fi
             fi
         fi
-        
+
         cd - >/dev/null
         rm -rf "$TEMP_DIR"
     fi
@@ -123,7 +123,7 @@ fi
 # 运行 gosec 扫描
 if [ "$GOSEC_INSTALLED" = true ] && command -v gosec >/dev/null 2>&1; then
     print_info "运行 gosec 安全扫描..."
-    
+
     if [ -f ".gosec.json" ]; then
         print_info "使用配置文件 .gosec.json"
         if gosec -conf .gosec.json ./...; then

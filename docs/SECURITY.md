@@ -94,7 +94,7 @@ govulncheck ./...
 
 ### 2. gosec
 ```bash
-go install github.com/securecodewarrior/gosec/v2/cmd/gosec@latest
+go install github.com/securego/gosec/v2/cmd/gosec@latest
 gosec -conf .gosec.json ./...
 ```
 

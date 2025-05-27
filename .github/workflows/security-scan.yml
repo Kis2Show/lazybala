@@ -18,7 +18,7 @@ jobs:
   security-scan:
     name: Security Scan
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -41,7 +41,7 @@ jobs:
       run: |
         echo "Installing govulncheck..."
         go install golang.org/x/vuln/cmd/govulncheck@latest
-        
+
         echo "Running vulnerability check..."
         govulncheck ./...
 
@@ -49,30 +49,30 @@ jobs:
       continue-on-error: true
       run: |
         echo "Installing Gosec via binary download..."
-        
-        # 设置版本和下载信息
-        GOSEC_VERSION="2.18.2"
+
+        # 设置版本和下载信息 - 使用正确的仓库和版本
+        GOSEC_VERSION="2.22.4"
         BINARY_NAME="gosec_${GOSEC_VERSION}_linux_amd64.tar.gz"
-        DOWNLOAD_URL="https://github.com/securecodewarrior/gosec/releases/download/v${GOSEC_VERSION}/${BINARY_NAME}"
-        
+        DOWNLOAD_URL="https://github.com/securego/gosec/releases/download/v${GOSEC_VERSION}/${BINARY_NAME}"
+
         echo "Downloading from: ${DOWNLOAD_URL}"
-        
+
         # 下载到临时目录
         TEMP_DIR=$(mktemp -d)
         cd "${TEMP_DIR}"
-        
+
         # 下载文件
         curl -fsSL "${DOWNLOAD_URL}" -o gosec.tar.gz
-        
+
         # 解压
         tar -xzf gosec.tar.gz
-        
+
         # 移动到 PATH
         sudo mv gosec /usr/local/bin/
-        
+
         # 验证
         gosec --version
-        
+
         echo "Gosec installation completed"
 
     - name: Run Gosec scan
@@ -80,7 +80,7 @@ jobs:
       run: |
         if command -v gosec >/dev/null 2>&1; then
           echo "Running Gosec security scan..."
-          
+
           # 检查配置文件
           if [ -f ".gosec.json" ]; then
             echo "Using .gosec.json configuration"
@@ -89,7 +89,7 @@ jobs:
             echo "Using default configuration"
             gosec -fmt sarif -out gosec-results.sarif ./...
           fi
-          
+
           echo "Gosec scan completed"
         else
           echo "Gosec not available, skipping scan"
@@ -104,15 +104,15 @@ jobs:
     - name: Run basic security checks
       run: |
         echo "Running basic security checks..."
-        
+
         # 检查敏感文件
         echo "Checking for sensitive files..."
         find . -name "*.key" -o -name "*.pem" -o -name "*.p12" -o -name "*.pfx" | head -10 || echo "No sensitive files found"
-        
+
         # 检查硬编码密码
         echo "Checking for hardcoded secrets..."
         grep -r -i "password\|secret\|token" --include="*.go" . | grep -v "// " | head -5 || echo "No obvious hardcoded secrets found"
-        
+
         # 检查 Go 模块
         echo "Go modules:"
         go list -m all | head -10
