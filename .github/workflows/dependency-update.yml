@@ -197,7 +197,7 @@ jobs:
       with:
         go-version: '1.23'
 
-    - name: Run Go security audit
+    - name: Run Go vulnerability check
       continue-on-error: true  # 允许安全扫描失败而不中断工作流
       run: |
         echo "Installing govulncheck..."
@@ -206,42 +206,43 @@ jobs:
         echo "Running vulnerability check..."
         govulncheck ./... || echo "Vulnerability check completed with warnings"
 
-    - name: Run Nancy security scan
-      continue-on-error: true  # 允许安全扫描失败而不中断工作流
-      run: |
-        # 安装 nancy
-        echo "Installing Nancy..."
-        go install github.com/sonatypecommunity/nancy@latest
-
-        # 检查 nancy 是否安装成功
-        if ! command -v nancy &> /dev/null; then
-          echo "Nancy installation failed, skipping security scan"
-          exit 0
-        fi
-
-        # 运行安全扫描
-        echo "Running Nancy security scan..."
-        go list -json -deps ./... | nancy sleuth || echo "Nancy scan completed with warnings"
-
     - name: Run Gosec Security Scanner
       continue-on-error: true  # 允许安全扫描失败而不中断工作流
       run: |
-        # 安装 gosec
-        echo "Installing Gosec..."
-        go install github.com/securecodewarrior/gosec/v2/cmd/gosec@latest
+        echo "Installing Gosec using binary release..."
 
-        # 检查 gosec 是否安装成功
-        if ! command -v gosec &> /dev/null; then
-          echo "Gosec installation failed, skipping security scan"
-          exit 0
-        fi
+        # 下载预编译的二进制文件
+        GOSEC_VERSION="2.18.2"
+        OS="linux"
+        ARCH="amd64"
 
-        # 运行安全扫描（使用配置文件）
-        echo "Running Gosec security scan..."
-        if [ -f ".gosec.json" ]; then
-          gosec -conf .gosec.json -fmt sarif -out gosec-results.sarif ./... || echo "Gosec scan completed with warnings"
+        # 创建临时目录
+        mkdir -p /tmp/gosec
+        cd /tmp/gosec
+
+        # 下载并解压
+        curl -L "https://github.com/securecodewarrior/gosec/releases/download/v${GOSEC_VERSION}/gosec_${GOSEC_VERSION}_${OS}_${ARCH}.tar.gz" -o gosec.tar.gz
+        tar -xzf gosec.tar.gz
+
+        # 移动到 PATH
+        sudo mv gosec /usr/local/bin/
+
+        # 验证安装
+        gosec --version || echo "Gosec installation failed"
+
+        # 返回工作目录
+        cd $GITHUB_WORKSPACE
+
+        # 运行安全扫描
+        if command -v gosec &> /dev/null; then
+          echo "Running Gosec security scan..."
+          if [ -f ".gosec.json" ]; then
+            gosec -conf .gosec.json -fmt sarif -out gosec-results.sarif ./... || echo "Gosec scan completed with warnings"
+          else
+            gosec -fmt sarif -out gosec-results.sarif ./... || echo "Gosec scan completed with warnings"
+          fi
         else
-          gosec -fmt sarif -out gosec-results.sarif ./... || echo "Gosec scan completed with warnings"
+          echo "Gosec not available, skipping scan"
         fi
 
     - name: Upload Gosec results to GitHub Security tab
@@ -249,3 +250,20 @@ jobs:
       if: always() && hashFiles('gosec-results.sarif') != ''
       with:
         sarif_file: 'gosec-results.sarif'
+
+    - name: Run basic security checks
+      continue-on-error: true
+      run: |
+        echo "Running basic security checks..."
+
+        # 检查敏感文件
+        echo "Checking for sensitive files..."
+        find . -name "*.key" -o -name "*.pem" -o -name "*.p12" -o -name "*.pfx" | head -10
+
+        # 检查硬编码密码
+        echo "Checking for hardcoded secrets..."
+        grep -r -i "password\|secret\|token\|key" --include="*.go" . | grep -v "// " | head -5 || echo "No obvious hardcoded secrets found"
+
+        # 检查 Go 模块
+        echo "Checking Go modules..."
+        go list -m all | head -10

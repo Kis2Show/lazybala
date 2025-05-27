@@ -98,10 +98,14 @@ go install github.com/securecodewarrior/gosec/v2/cmd/gosec@latest
 gosec -conf .gosec.json ./...
 ```
 
-### 3. nancy
+### 3. 静态分析工具
 ```bash
-go install github.com/sonatypecommunity/nancy@latest
-go list -json -deps ./... | nancy sleuth
+# 使用 go vet 进行基础检查
+go vet ./...
+
+# 使用 staticcheck 进行高级静态分析
+go install honnef.co/go/tools/cmd/staticcheck@latest
+staticcheck ./...
 ```
 
 ## 🔄 持续安全
