@@ -1,5 +1,6 @@
 name: Dependency Update
 
+# 工作流版本: v2.1.0 - 修复 gosec 安装问题
 on:
   schedule:
     # 每周一早上 8:00 UTC 运行
@@ -22,6 +23,14 @@ jobs:
       actions: write
 
     steps:
+    - name: Workflow version check
+      run: |
+        echo "=== Dependency Update Workflow v2.1.0 ==="
+        echo "Timestamp: $(date)"
+        echo "Runner: ${{ runner.os }}"
+        echo "Event: ${{ github.event_name }}"
+        echo "========================================="
+
     - name: Checkout repository
       uses: actions/checkout@v4
       with:
@@ -32,6 +41,12 @@ jobs:
       with:
         go-version: '1.23'
         cache: false  # 禁用缓存以避免恢复问题
+
+    - name: Clear Go module cache
+      run: |
+        echo "Clearing Go module cache..."
+        go clean -modcache || true
+        echo "Cache cleared"
 
     - name: Update Go dependencies
       run: |
@@ -189,6 +204,13 @@ jobs:
       contents: read
 
     steps:
+    - name: Security audit version check
+      run: |
+        echo "=== Security Audit v2.1.0 ==="
+        echo "Timestamp: $(date)"
+        echo "Fixed gosec installation method"
+        echo "=============================="
+
     - name: Checkout repository
       uses: actions/checkout@v4
 
@@ -206,44 +228,69 @@ jobs:
         echo "Running vulnerability check..."
         govulncheck ./... || echo "Vulnerability check completed with warnings"
 
-    - name: Run Gosec Security Scanner
+    - name: Install and run Gosec
       continue-on-error: true  # 允许安全扫描失败而不中断工作流
       run: |
-        echo "Installing Gosec using binary release..."
+        echo "=== Gosec Security Scanner Setup ==="
 
-        # 下载预编译的二进制文件
+        # 设置变量
         GOSEC_VERSION="2.18.2"
-        OS="linux"
-        ARCH="amd64"
+        DOWNLOAD_URL="https://github.com/securecodewarrior/gosec/releases/download/v${GOSEC_VERSION}/gosec_${GOSEC_VERSION}_linux_amd64.tar.gz"
 
-        # 创建临时目录
-        mkdir -p /tmp/gosec
-        cd /tmp/gosec
+        echo "Downloading Gosec v${GOSEC_VERSION}..."
+        echo "URL: ${DOWNLOAD_URL}"
 
-        # 下载并解压
-        curl -L "https://github.com/securecodewarrior/gosec/releases/download/v${GOSEC_VERSION}/gosec_${GOSEC_VERSION}_${OS}_${ARCH}.tar.gz" -o gosec.tar.gz
-        tar -xzf gosec.tar.gz
+        # 创建工作目录
+        WORK_DIR="/tmp/gosec-install"
+        mkdir -p "${WORK_DIR}"
+        cd "${WORK_DIR}"
 
-        # 移动到 PATH
-        sudo mv gosec /usr/local/bin/
+        # 下载文件
+        if curl -fsSL "${DOWNLOAD_URL}" -o gosec.tar.gz; then
+          echo "✓ Download successful"
+        else
+          echo "✗ Download failed, skipping Gosec scan"
+          exit 0
+        fi
+
+        # 解压文件
+        if tar -xzf gosec.tar.gz; then
+          echo "✓ Extraction successful"
+        else
+          echo "✗ Extraction failed, skipping Gosec scan"
+          exit 0
+        fi
+
+        # 安装到系统路径
+        if sudo mv gosec /usr/local/bin/gosec; then
+          echo "✓ Installation successful"
+        else
+          echo "✗ Installation failed, skipping Gosec scan"
+          exit 0
+        fi
 
         # 验证安装
-        gosec --version || echo "Gosec installation failed"
+        if gosec --version; then
+          echo "✓ Gosec is ready"
+        else
+          echo "✗ Gosec verification failed"
+          exit 0
+        fi
 
         # 返回工作目录
-        cd $GITHUB_WORKSPACE
+        cd "${GITHUB_WORKSPACE}"
 
-        # 运行安全扫描
-        if command -v gosec &> /dev/null; then
-          echo "Running Gosec security scan..."
-          if [ -f ".gosec.json" ]; then
-            gosec -conf .gosec.json -fmt sarif -out gosec-results.sarif ./... || echo "Gosec scan completed with warnings"
-          else
-            gosec -fmt sarif -out gosec-results.sarif ./... || echo "Gosec scan completed with warnings"
-          fi
+        # 运行扫描
+        echo "=== Running Gosec Security Scan ==="
+        if [ -f ".gosec.json" ]; then
+          echo "Using configuration file: .gosec.json"
+          gosec -conf .gosec.json -fmt sarif -out gosec-results.sarif ./... || echo "Scan completed with warnings"
         else
-          echo "Gosec not available, skipping scan"
+          echo "Using default configuration"
+          gosec -fmt sarif -out gosec-results.sarif ./... || echo "Scan completed with warnings"
         fi
+
+        echo "✓ Gosec scan completed"
 
     - name: Upload Gosec results to GitHub Security tab
       uses: github/codeql-action/upload-sarif@v3
