@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"path/filepath"
 	"runtime"
 
 	"github.com/gin-gonic/gin"
@@ -346,7 +345,7 @@ func getConfig(c *gin.Context) {
 	}
 
 	// 添加cookies状态信息
-	response := map[string]interface{}{
+	response := map[string]any{
 		"save_path":       config.SavePath,
 		"title_regex":     config.TitleRegex,
 		"quality":         config.Quality,
@@ -447,25 +446,6 @@ func getLoginMessage(code int) string {
 	default:
 		return "登录失败"
 	}
-}
-
-func getBinaryPath(name string) string {
-	os := runtime.GOOS
-	arch := runtime.GOARCH
-
-	if os == "windows" {
-		return filepath.Join("bin", name+"_win64.exe")
-	} else if os == "linux" {
-		if arch == "amd64" {
-			return filepath.Join("bin", name+"_linux")
-		} else if arch == "arm64" {
-			return filepath.Join("bin", name+"_linux_aarch64")
-		}
-		return filepath.Join("bin", name+"_linux")
-	}
-
-	// 默认返回Linux版本
-	return filepath.Join("bin", name+"_linux")
 }
 
 // 获取用户信息

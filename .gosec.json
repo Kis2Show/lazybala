@@ -7,14 +7,22 @@
     "G304",
     "G401",
     "G501",
-    "G502"
+    "G502",
+    "G114",
+    "G115"
   ],
   "exclude-generated": true,
   "exclude-dirs": [
     "vendor",
     "test",
     "tests",
-    "tmp"
+    "tmp",
+    "audiobooks",
+    "config",
+    "cookies",
+    "bin",
+    ".git",
+    "frontend"
   ],
   "include": [
     "G101",

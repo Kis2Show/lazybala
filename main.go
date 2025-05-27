@@ -33,14 +33,48 @@ func main() {
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
 
-	// 配置 CORS
+	// 配置 CORS - 更安全的配置
+	corsOrigins := []string{
+		"http://localhost:8080",
+		"http://127.0.0.1:8080",
+		"http://localhost:3000", // 开发环境
+		"http://127.0.0.1:3000", // 开发环境
+	}
+
+	// 从环境变量获取额外的允许源
+	if extraOrigins := os.Getenv("CORS_ORIGINS"); extraOrigins != "" {
+		corsOrigins = append(corsOrigins, extraOrigins)
+	}
+
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"*"},
-		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"*"},
+		AllowOrigins: corsOrigins,
+		AllowMethods: []string{"GET", "POST", "OPTIONS"},
+		AllowHeaders: []string{
+			"Origin",
+			"Content-Type",
+			"Accept",
+			"Authorization",
+			"X-Requested-With",
+		},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
+		MaxAge:           12 * 3600, // 12 小时
 	}))
+
+	// 添加安全头部中间件
+	r.Use(func(c *gin.Context) {
+		// 防止点击劫持
+		c.Header("X-Frame-Options", "DENY")
+		// 防止 MIME 类型嗅探
+		c.Header("X-Content-Type-Options", "nosniff")
+		// XSS 保护
+		c.Header("X-XSS-Protection", "1; mode=block")
+		// 引用者策略
+		c.Header("Referrer-Policy", "strict-origin-when-cross-origin")
+		// 内容安全策略
+		c.Header("Content-Security-Policy", "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' ws: wss:")
+		c.Next()
+	})
 
 	// 添加 favicon 路由
 	r.GET("/favicon.svg", func(c *gin.Context) {

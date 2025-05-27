@@ -49,7 +49,7 @@ jobs:
 
     - name: Create Pull Request
       if: steps.changes.outputs.changed == 'true'
-      uses: peter-evans/create-pull-request@v6
+      uses: peter-evans/create-pull-request@v5
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         commit-message: 'chore: update Go dependencies'
@@ -152,7 +152,7 @@ jobs:
 
     - name: Create Pull Request for Docker update
       if: steps.go-version.outputs.update_needed == 'true'
-      uses: peter-evans/create-pull-request@v6
+      uses: peter-evans/create-pull-request@v5
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         commit-message: 'chore: update Go base image to ${{ steps.go-version.outputs.latest }}'
