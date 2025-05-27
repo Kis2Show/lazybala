@@ -304,7 +304,7 @@ LazyBala 重视安全性，我们定期进行安全审计和依赖更新。
 ### 安全特性
 
 - **自动依赖更新** - GitHub Actions 定期检查和更新依赖
-- **安全扫描** - 使用 govulncheck、gosec 和 nancy 进行安全扫描
+- **安全扫描** - 使用 govulncheck、gosec 和 staticcheck 进行安全扫描
 - **权限最小化** - Docker 容器使用非 root 用户运行
 - **输入验证** - 所有用户输入都经过严格验证
 
@@ -314,7 +314,19 @@ LazyBala 重视安全性，我们定期进行安全审计和依赖更新。
 
 - **govulncheck** - Go 官方漏洞检查工具
 - **gosec** - Go 安全代码分析器
-- **nancy** - 依赖漏洞扫描器
+- **staticcheck** - 高级静态分析工具
+
+#### 本地安全扫描
+
+```bash
+# 运行完整的安全扫描
+./scripts/security-scan.sh
+
+# 或手动运行各个工具
+go vet ./...
+govulncheck ./...
+gosec ./...
+```
 
 ### 报告安全问题
 
