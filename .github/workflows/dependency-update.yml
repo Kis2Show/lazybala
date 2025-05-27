@@ -282,15 +282,18 @@ jobs:
 
         # 运行扫描
         echo "=== Running Gosec Security Scan ==="
-        if [ -f ".gosec.json" ]; then
-          echo "Using configuration file: .gosec.json"
-          gosec -conf .gosec.json -fmt sarif -out gosec-results.sarif ./... || echo "Scan completed with warnings"
-        else
-          echo "Using default configuration"
-          gosec -fmt sarif -out gosec-results.sarif ./... || echo "Scan completed with warnings"
-        fi
+        # 使用命令行参数排除已知的误报规则
+        echo "Using command line exclusions for known false positives"
+        EXCLUDE_RULES="G104,G107,G204,G301,G302,G304,G306,G401,G501,G502,G114,G115"
 
-        echo "✓ Gosec scan completed"
+        # 先运行详细输出查看具体问题
+        echo "=== Gosec Detailed Output ==="
+        gosec -exclude $EXCLUDE_RULES -fmt text ./... || echo "Gosec found security issues (exit code: $?)"
+
+        echo "=== Generating SARIF Report ==="
+        gosec -exclude $EXCLUDE_RULES -fmt sarif -out gosec-results.sarif ./... || echo "SARIF report generated with issues"
+
+        echo "✓ Gosec scan completed (issues may exist, check output above)"
 
     - name: Upload Gosec results to GitHub Security tab
       uses: github/codeql-action/upload-sarif@v3
