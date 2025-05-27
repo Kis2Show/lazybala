@@ -78,6 +78,14 @@ func main() {
 		c.File("status.html")
 	})
 
+	// 健康检查端点 - 简单的 JSON 响应
+	r.GET("/health", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"status":  "ok",
+			"service": "lazybala",
+		})
+	})
+
 	// API 路由
 	api := r.Group("/api")
 	{

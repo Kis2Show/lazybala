@@ -253,6 +253,7 @@ lazybala/
 - [群晖 NAS 部署指南](docs/SYNOLOGY_DEPLOYMENT.md)
 - [yt-dlp 升级指南](docs/YTDLP_UPGRADE.md)
 - [v2.0 迁移指南](docs/MIGRATION_V2.md) 🆕
+- [健康检查修复指南](docs/HEALTHCHECK_FIX.md) 🆕
 - [API 文档](docs/API.md)
 
 ## 🛠️ 开发

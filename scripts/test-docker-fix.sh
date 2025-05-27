@@ -122,10 +122,28 @@ fi
 # 检查应用是否响应
 print_info "检查应用响应..."
 sleep 5
-if curl -s http://localhost:8080/ >/dev/null; then
-    print_success "应用响应正常"
+
+# 测试健康检查端点
+if curl -s http://localhost:8080/health >/dev/null; then
+    print_success "健康检查端点响应正常"
 else
-    print_warning "应用可能还在启动中，请稍后手动检查"
+    print_warning "健康检查端点无响应，检查主页..."
+    if curl -s http://localhost:8080/ >/dev/null; then
+        print_success "主页响应正常"
+    else
+        print_warning "应用可能还在启动中，请稍后手动检查"
+    fi
+fi
+
+# 检查 Docker 健康状态
+print_info "检查 Docker 健康状态..."
+HEALTH_STATUS=$(docker inspect --format='{{.State.Health.Status}}' lazybala 2>/dev/null || echo "unknown")
+if [ "$HEALTH_STATUS" = "healthy" ]; then
+    print_success "Docker 健康检查: $HEALTH_STATUS"
+elif [ "$HEALTH_STATUS" = "starting" ]; then
+    print_info "Docker 健康检查: $HEALTH_STATUS (正在启动)"
+else
+    print_warning "Docker 健康检查: $HEALTH_STATUS"
 fi
 
 # 显示日志

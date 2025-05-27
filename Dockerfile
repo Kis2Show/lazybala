@@ -125,9 +125,9 @@ EXPOSE 8080
 ENV PORT=8080
 ENV GIN_MODE=release
 
-# 健康检查
-HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:8080/ || exit 1
+# 健康检查 - 使用专用的健康检查端点
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+  CMD curl -f http://localhost:8080/health || wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1
 
 # 数据卷 (移除 /app/bin，保持 yt-dlp 在容器内)
 VOLUME ["/app/audiobooks", "/app/config", "/app/cookies"]
